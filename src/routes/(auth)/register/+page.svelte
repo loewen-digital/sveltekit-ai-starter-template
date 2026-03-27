@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { validateRegistration } from '$lib/shared/validation.js';
 
 	let { form } = $props();
 
@@ -11,10 +12,7 @@
 	let loading = $state(false);
 
 	function validate(): string {
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email address';
-		if (password.length < 8) return 'Password must be at least 8 characters';
-		if (password !== passwordConfirm) return 'Passwords do not match';
-		return '';
+		return validateRegistration({ email, password, passwordConfirm }) ?? '';
 	}
 
 	let error = $derived(clientError || form?.error || '');
