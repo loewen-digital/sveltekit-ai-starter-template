@@ -1,6 +1,10 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 
+export function normalizeEmail(email: string): string {
+	return email.trim().toLowerCase();
+}
+
 export function validateEmail(email: string): string | null {
 	if (!EMAIL_REGEX.test(email)) return 'Invalid email address';
 	return null;

@@ -3,6 +3,7 @@ import { verify } from '@node-rs/argon2';
 import { getLucia } from '$lib/features/auth/server/auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
+import { normalizeEmail } from '$lib/shared/validation.js';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -22,10 +23,11 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid email or password' });
 		}
 
-		const user = await getDb().select().from(userTable).where(eq(userTable.email, email)).get();
+		const normalizedEmail = normalizeEmail(email);
+		const user = await getDb().select().from(userTable).where(eq(userTable.email, normalizedEmail)).get();
 
 		if (!user) {
-			return fail(400, { error: 'Invalid email or password', email: String(email) });
+			return fail(400, { error: 'Invalid email or password', email: normalizedEmail });
 		}
 
 		const validPassword = await verify(user.passwordHash, password, {
@@ -36,7 +38,7 @@ export const actions: Actions = {
 		});
 
 		if (!validPassword) {
-			return fail(400, { error: 'Invalid email or password', email: String(email) });
+			return fail(400, { error: 'Invalid email or password', email: normalizedEmail });
 		}
 
 		const lucia = getLucia();

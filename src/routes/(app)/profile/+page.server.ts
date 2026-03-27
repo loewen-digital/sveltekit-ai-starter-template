@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
-import { validateEmail, validatePassword, validatePasswordConfirm } from '$lib/shared/validation.js';
+import { validateEmail, validatePassword, validatePasswordConfirm, normalizeEmail } from '$lib/shared/validation.js';
+import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
 import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -8,7 +9,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	updateEmail: async ({ request, locals }) => {
+	updateEmail: async ({ request, locals, url }) => {
 		if (!locals.user) {
 			return fail(401, { emailError: 'Not authenticated' });
 		}
@@ -21,17 +22,20 @@ export const actions: Actions = {
 			return fail(400, { emailError: 'Invalid form data' });
 		}
 
-		const validationError = validateEmail(email);
+		const normalized = normalizeEmail(email);
+		const validationError = validateEmail(normalized);
 		if (validationError) {
 			return fail(400, { emailError: validationError });
 		}
 
-		const result = await updateEmail(locals.user.id, email, password);
+		const result = await updateEmail(locals.user.id, normalized, password);
 		if (result.error) {
 			return fail(400, { emailError: result.error });
 		}
 
-		return { emailSuccess: 'Email updated successfully' };
+		await createVerificationToken(locals.user.id, normalized, url.origin);
+
+		return { emailSuccess: 'Email updated. Please check your inbox to verify your new email.' };
 	},
 
 	updatePassword: async ({ request, locals }) => {

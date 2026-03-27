@@ -1,6 +1,7 @@
 import { verify, hash } from '@node-rs/argon2';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
+import { normalizeEmail } from '$lib/shared/validation.js';
 import { eq } from 'drizzle-orm';
 
 const ARGON2_CONFIG = {
@@ -27,14 +28,15 @@ export async function updateEmail(
 		return { error: 'Incorrect password' };
 	}
 
-	const existing = await db.select().from(userTable).where(eq(userTable.email, newEmail)).get();
+	const normalized = normalizeEmail(newEmail);
+	const existing = await db.select().from(userTable).where(eq(userTable.email, normalized)).get();
 	if (existing && existing.id !== userId) {
 		return { error: 'An account with this email already exists' };
 	}
 
 	await db
 		.update(userTable)
-		.set({ email: newEmail, updatedAt: new Date() })
+		.set({ email: normalized, emailVerified: false })
 		.where(eq(userTable.id, userId));
 
 	return {};

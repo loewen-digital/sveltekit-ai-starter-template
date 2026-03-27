@@ -6,9 +6,10 @@ import { sessionTable, userTable } from '$lib/server/db/schema.js';
 
 interface DatabaseUserAttributes {
 	email: string;
+	email_verified: boolean;
 }
 
-type AppLucia = Lucia<Record<never, never>, { email: string }>;
+type AppLucia = Lucia<Record<never, never>, { email: string; emailVerified: boolean }>;
 
 let _lucia: AppLucia | null = null;
 
@@ -27,7 +28,8 @@ export function getLucia(): AppLucia {
 		},
 		getUserAttributes: (attributes) => {
 			return {
-				email: attributes.email
+				email: attributes.email,
+				emailVerified: attributes.email_verified
 			};
 		}
 	});
