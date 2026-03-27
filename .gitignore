@@ -1,0 +1,15 @@
+node_modules
+.svelte-kit
+.wrangler
+.env
+.env.*
+!.env.example
+build
+dist
+*.db
+*.sqlite
+# drizzle/*.sql  # Uncomment to ignore generated migrations
+.DS_Store
+.idea
+playwright-report
+test-results
