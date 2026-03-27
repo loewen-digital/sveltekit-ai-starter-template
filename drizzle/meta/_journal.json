@@ -8,6 +8,13 @@
       "when": 1774631634238,
       "tag": "0000_sad_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774636868632,
+      "tag": "0001_smooth_dark_beast",
+      "breakpoints": true
     }
   ]
 }

@@ -2,9 +2,10 @@ import { fail, redirect } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
 import { generateIdFromEntropySize } from 'lucia';
 import { getLucia } from '$lib/features/auth/server/auth.js';
+import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
-import { validateRegistration } from '$lib/shared/validation.js';
+import { validateRegistration, normalizeEmail } from '$lib/shared/validation.js';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, url }) => {
 		const formData = await request.formData();
 		const email = formData.get('email');
 		const password = formData.get('password');
@@ -25,18 +26,19 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid form data', email: String(email ?? '') });
 		}
 
-		const validationError = validateRegistration({ email, password, passwordConfirm });
+		const normalizedEmail = normalizeEmail(email);
+		const validationError = validateRegistration({ email: normalizedEmail, password, passwordConfirm });
 		if (validationError) {
 			return fail(400, { error: validationError, email });
 		}
 
 		const db = getDb();
-		const existingUser = await db.select().from(userTable).where(eq(userTable.email, email)).get();
+		const existingUser = await db.select().from(userTable).where(eq(userTable.email, normalizedEmail)).get();
 
 		if (existingUser) {
 			return fail(400, {
 				error: 'An account with this email already exists',
-				email: String(email)
+				email: normalizedEmail
 			});
 		}
 
@@ -50,7 +52,7 @@ export const actions: Actions = {
 
 		await getDb().insert(userTable).values({
 			id: userId,
-			email,
+			email: normalizedEmail,
 			passwordHash
 		});
 
@@ -61,6 +63,8 @@ export const actions: Actions = {
 			path: '.',
 			...sessionCookie.attributes
 		});
+
+		await createVerificationToken(userId, normalizedEmail, url.origin);
 
 		redirect(302, '/');
 	}

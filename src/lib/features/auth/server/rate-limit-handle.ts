@@ -1,7 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { authRateLimiter } from '$lib/server/rate-limit.js';
 
-const RATE_LIMITED_PATHS = ['/login', '/register'];
+const RATE_LIMITED_PATHS = ['/login', '/register', '/forgot-password'];
 
 export const rateLimitHandle: Handle = async ({ event, resolve }) => {
 	if (event.request.method !== 'POST') {

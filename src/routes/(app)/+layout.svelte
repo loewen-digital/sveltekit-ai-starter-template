@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Alert } from '$lib/design/components';
 	import LogoutButton from '$lib/features/auth/components/LogoutButton.svelte';
 
 	let { data, children } = $props();
@@ -43,6 +44,14 @@
 	</nav>
 
 	<main class="mx-auto max-w-7xl px-4 py-8">
+		{#if !data.user.emailVerified}
+			<div class="mb-6">
+				<Alert variant="warning">
+					Your email is not verified.
+					<a href="/resend-verification" class="font-medium underline">Resend verification email</a>
+				</Alert>
+			</div>
+		{/if}
 		{@render children()}
 	</main>
 </div>
