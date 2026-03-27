@@ -4,6 +4,7 @@ import { generateIdFromEntropySize } from 'lucia';
 import { getLucia } from '$lib/features/auth/server/auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
+import { validateRegistration } from '$lib/shared/validation.js';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -20,19 +21,13 @@ export const actions: Actions = {
 		const password = formData.get('password');
 		const passwordConfirm = formData.get('passwordConfirm');
 
-		if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			return fail(400, { error: 'Invalid email address', email: String(email ?? '') });
+		if (typeof email !== 'string' || typeof password !== 'string' || typeof passwordConfirm !== 'string') {
+			return fail(400, { error: 'Invalid form data', email: String(email ?? '') });
 		}
 
-		if (typeof password !== 'string' || password.length < 8) {
-			return fail(400, {
-				error: 'Password must be at least 8 characters',
-				email: String(email)
-			});
-		}
-
-		if (password !== passwordConfirm) {
-			return fail(400, { error: 'Passwords do not match', email: String(email) });
+		const validationError = validateRegistration({ email, password, passwordConfirm });
+		if (validationError) {
+			return fail(400, { error: validationError, email });
 		}
 
 		const db = getDb();
