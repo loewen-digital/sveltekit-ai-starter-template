@@ -14,6 +14,7 @@
 			<!-- Desktop -->
 			<div class="hidden items-center gap-4 sm:flex">
 				<span class="text-sm text-text-secondary">{data.user.email}</span>
+				<a href="/profile" class="text-sm text-text-secondary hover:text-primary">Settings</a>
 				<LogoutButton />
 			</div>
 
@@ -30,9 +31,12 @@
 		<!-- Mobile menu -->
 		{#if menuOpen}
 			<div class="border-t border-border px-4 py-3 sm:hidden">
-				<div class="flex items-center justify-between">
-					<span class="text-sm text-text-secondary">{data.user.email}</span>
-					<LogoutButton />
+				<div class="flex flex-col gap-3">
+					<div class="flex items-center justify-between">
+						<span class="text-sm text-text-secondary">{data.user.email}</span>
+						<LogoutButton />
+					</div>
+					<a href="/profile" class="text-sm text-text-secondary hover:text-primary">Settings</a>
 				</div>
 			</div>
 		{/if}
