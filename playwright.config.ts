@@ -20,6 +20,9 @@ export default defineConfig({
 	webServer: {
 		command: 'npm run dev',
 		url: 'http://localhost:5173',
-		reuseExistingServer: !process.env.CI
+		reuseExistingServer: !process.env.CI,
+		// The whole suite hits the app from one IP; without this the auth rate
+		// limiter starts rejecting registrations partway through the run.
+		env: { DISABLE_RATE_LIMIT: 'true' }
 	}
 });

@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { verify } from '@node-rs/argon2';
 import { getLucia } from '$lib/features/auth/server/auth.js';
+import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
 import { normalizeEmail } from '$lib/shared/validation.js';
@@ -14,7 +15,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async (event) => {
+		const limited = checkAuthRateLimit(event);
+		if (limited) return limited;
+
+		const { request, cookies } = event;
 		const formData = await request.formData();
 		const email = formData.get('email');
 		const password = formData.get('password');
@@ -24,7 +29,11 @@ export const actions: Actions = {
 		}
 
 		const normalizedEmail = normalizeEmail(email);
-		const user = await getDb().select().from(userTable).where(eq(userTable.email, normalizedEmail)).get();
+		const user = await getDb()
+			.select()
+			.from(userTable)
+			.where(eq(userTable.email, normalizedEmail))
+			.get();
 
 		if (!user) {
 			return fail(400, { error: 'Invalid email or password', email: normalizedEmail });

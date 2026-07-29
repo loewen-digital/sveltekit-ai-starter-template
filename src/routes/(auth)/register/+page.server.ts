@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
 import { generateIdFromEntropySize } from 'lucia';
 import { getLucia } from '$lib/features/auth/server/auth.js';
+import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
 import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
@@ -16,24 +17,40 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies, url }) => {
+	default: async (event) => {
+		const limited = checkAuthRateLimit(event);
+		if (limited) return limited;
+
+		const { request, cookies, url } = event;
 		const formData = await request.formData();
 		const email = formData.get('email');
 		const password = formData.get('password');
 		const passwordConfirm = formData.get('passwordConfirm');
 
-		if (typeof email !== 'string' || typeof password !== 'string' || typeof passwordConfirm !== 'string') {
+		if (
+			typeof email !== 'string' ||
+			typeof password !== 'string' ||
+			typeof passwordConfirm !== 'string'
+		) {
 			return fail(400, { error: 'Invalid form data', email: String(email ?? '') });
 		}
 
 		const normalizedEmail = normalizeEmail(email);
-		const validationError = validateRegistration({ email: normalizedEmail, password, passwordConfirm });
+		const validationError = validateRegistration({
+			email: normalizedEmail,
+			password,
+			passwordConfirm
+		});
 		if (validationError) {
 			return fail(400, { error: validationError, email });
 		}
 
 		const db = getDb();
-		const existingUser = await db.select().from(userTable).where(eq(userTable.email, normalizedEmail)).get();
+		const existingUser = await db
+			.select()
+			.from(userTable)
+			.where(eq(userTable.email, normalizedEmail))
+			.get();
 
 		if (existingUser) {
 			return fail(400, {

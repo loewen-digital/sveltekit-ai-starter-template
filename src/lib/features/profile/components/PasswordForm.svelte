@@ -13,7 +13,11 @@
 	let loading = $state(false);
 
 	function validate(): string {
-		return validatePassword(newPassword) ?? validatePasswordConfirm(newPassword, newPasswordConfirm) ?? '';
+		return (
+			validatePassword(newPassword) ??
+			validatePasswordConfirm(newPassword, newPasswordConfirm) ??
+			''
+		);
 	}
 
 	let error = $derived(clientError || (form?.passwordError as string) || '');

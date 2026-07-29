@@ -9,7 +9,9 @@
 	let loading = $state(false);
 
 	let error = $derived(form?.error || '');
-	let token = $derived(('token' in (form ?? {}) ? (form as { token?: string })?.token : null) || data.token);
+	let token = $derived(
+		('token' in (form ?? {}) ? (form as { token?: string })?.token : null) || data.token
+	);
 </script>
 
 <div class="flex min-h-screen items-center justify-center px-4">

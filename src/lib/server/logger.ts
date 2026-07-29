@@ -15,7 +15,11 @@ function shouldLog(level: LogLevel): boolean {
 	return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[minLevel];
 }
 
-function formatMessage(level: LogLevel, message: string, context?: Record<string, unknown>): string {
+function formatMessage(
+	level: LogLevel,
+	message: string,
+	context?: Record<string, unknown>
+): string {
 	if (dev) {
 		const ctx = context ? ` ${JSON.stringify(context)}` : '';
 		return `[${level.toUpperCase()}] ${message}${ctx}`;
