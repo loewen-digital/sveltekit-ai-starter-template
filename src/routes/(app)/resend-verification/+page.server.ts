@@ -16,7 +16,19 @@ export const actions: Actions = {
 			return { success: true };
 		}
 
-		await createVerificationToken(locals.user.id, locals.user.email, url.origin);
+		const { delivered } = await createVerificationToken(
+			locals.user.id,
+			locals.user.email,
+			url.origin
+		);
+
+		// Delivering the mail is the entire point of this page, so a failure here
+		// has to reach the user rather than showing a "check your inbox" lie.
+		if (!delivered) {
+			return fail(502, {
+				error: 'We could not send the verification email right now. Please try again in a moment.'
+			});
+		}
 
 		return { success: true };
 	}

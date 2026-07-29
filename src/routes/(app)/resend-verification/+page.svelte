@@ -18,6 +18,12 @@
 				Verification email sent to {data.user?.email}. Please check your inbox.
 			</Alert>
 		{:else}
+			<!-- Delivery can fail, so the form stays available for a retry. -->
+			{#if form?.error}
+				<div class="mb-4">
+					<Alert variant="danger">{form.error}</Alert>
+				</div>
+			{/if}
 			<p class="mb-4 text-text-secondary">
 				Your email ({data.user?.email}) is not yet verified. Click below to receive a new
 				verification link.

@@ -1,31 +1,36 @@
 import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 import { logger } from '$lib/server/logger.js';
+import { resolveEmailProvider } from './provider.js';
+import type { EmailMessage, EmailProvider } from './types.js';
 
-export interface EmailMessage {
-	to: string;
-	subject: string;
-	html: string;
+export type { EmailMessage, EmailProvider } from './types.js';
+export { EmailDeliveryError, EmailConfigurationError } from './types.js';
+
+let _provider: EmailProvider | null = null;
+
+function getProvider(): EmailProvider {
+	if (!_provider) {
+		_provider = resolveEmailProvider(env, dev);
+		logger.info('Email provider initialized', { provider: _provider.name });
+	}
+	return _provider;
 }
 
-// TODO: Replace with a real email provider (Resend, SendGrid, Postmark, etc.)
-// Example with Resend:
-//   import { Resend } from 'resend';
-//   const resend = new Resend(RESEND_API_KEY);
-//   await resend.emails.send({ from: 'noreply@yourdomain.com', ...message });
-
+/**
+ * Sends a message, or throws.
+ *
+ * Callers must decide what a failure means for them, because the policies
+ * differ: a failed password-reset mail must not surface to the requester (it
+ * would leak whether the account exists), while a failed "resend verification"
+ * absolutely must.
+ */
 export async function sendEmail(message: EmailMessage): Promise<void> {
-	if (dev) {
-		logger.info('Email sent (dev mode)', {
-			to: message.to,
-			subject: message.subject
-		});
-		logger.debug('Email content', { html: message.html });
-		return;
-	}
-
-	// In production, replace this with your email provider
-	logger.warn('Email sending not configured — email was not delivered', {
+	const provider = getProvider();
+	await provider.send(message);
+	logger.info('Email sent', {
 		to: message.to,
-		subject: message.subject
+		subject: message.subject,
+		provider: provider.name
 	});
 }

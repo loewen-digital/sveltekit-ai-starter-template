@@ -43,10 +43,21 @@ export async function requestPasswordReset(email: string, origin: string): Promi
 	const resetUrl = `${origin}/reset-password?token=${token}`;
 	const template = passwordResetEmail(resetUrl);
 
-	await sendEmail({
-		to: user.email,
-		...template
-	});
+	// Swallowed on purpose: this function must be indistinguishable from the
+	// unknown-address path above, and a propagating error would turn a delivery
+	// problem into an account-existence oracle. Operators see it in the logs.
+	try {
+		await sendEmail({
+			to: user.email,
+			...template
+		});
+	} catch (error) {
+		logger.error('Failed to deliver password reset email', {
+			userId: user.id,
+			error: error instanceof Error ? error.message : String(error)
+		});
+		return;
+	}
 
 	logger.info('Password reset token created', { userId: user.id });
 }

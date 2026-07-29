@@ -8,11 +8,16 @@ import { eq } from 'drizzle-orm';
 
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+export interface VerificationTokenResult {
+	/** False when the token was stored but the mail could not be handed off. */
+	delivered: boolean;
+}
+
 export async function createVerificationToken(
 	userId: string,
 	email: string,
 	origin: string
-): Promise<void> {
+): Promise<VerificationTokenResult> {
 	const db = getDb();
 
 	// Delete existing tokens for this user
@@ -34,12 +39,25 @@ export async function createVerificationToken(
 	const verifyUrl = `${origin}/verify-email?token=${token}`;
 	const template = emailVerificationEmail(verifyUrl);
 
-	await sendEmail({
-		to: email,
-		...template
-	});
+	// The token is already stored, so a delivery failure is recoverable: the user
+	// can trigger a resend. Report it instead of throwing, and let each caller
+	// decide whether it is worth surfacing.
+	try {
+		await sendEmail({
+			to: email,
+			...template
+		});
+	} catch (error) {
+		logger.error('Failed to deliver verification email', {
+			userId,
+			email,
+			error: error instanceof Error ? error.message : String(error)
+		});
+		return { delivered: false };
+	}
 
 	logger.info('Email verification token created', { userId, email });
+	return { delivered: true };
 }
 
 export async function verifyEmail(token: string): Promise<{ error?: string }> {

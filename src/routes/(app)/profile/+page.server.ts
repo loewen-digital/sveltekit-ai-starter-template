@@ -39,7 +39,17 @@ export const actions: Actions = {
 			return fail(400, { emailError: result.error });
 		}
 
-		await createVerificationToken(locals.user.id, normalized, url.origin);
+		// The address is already changed at this point, so a failed mail must not
+		// read as a full success — it would leave the user waiting for an inbox
+		// that never fills.
+		const { delivered } = await createVerificationToken(locals.user.id, normalized, url.origin);
+
+		if (!delivered) {
+			return {
+				emailSuccess:
+					'Email updated, but the verification message could not be sent. You can request a new one from the verification page.'
+			};
+		}
 
 		return { emailSuccess: 'Email updated. Please check your inbox to verify your new email.' };
 	},
