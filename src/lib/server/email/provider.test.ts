@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveEmailProvider } from './provider.js';
+import { resolveEmailProvider, resolveSmtpConfig } from './provider.js';
 import { EmailConfigurationError } from './types.js';
 
 const DEV = true;
@@ -48,6 +48,75 @@ describe('resolveEmailProvider', () => {
 		);
 	});
 
+	it('uses smtp as soon as a host is present', () => {
+		const provider = resolveEmailProvider(
+			{ SMTP_HOST: 'smtp.acme.com', EMAIL_FROM: 'Acme <no@acme.com>' },
+			PROD
+		);
+		expect(provider.name).toBe('smtp');
+	});
+
+	it('refuses to pick between resend and smtp on its own', () => {
+		expect(() =>
+			resolveEmailProvider(
+				{ RESEND_API_KEY: 're_key', SMTP_HOST: 'smtp.acme.com', EMAIL_FROM: 'a@b.com' },
+				PROD
+			)
+		).toThrow(/EMAIL_PROVIDER/);
+	});
+
+	it('requires SMTP_HOST when smtp is requested explicitly', () => {
+		expect(() =>
+			resolveEmailProvider({ EMAIL_PROVIDER: 'smtp', EMAIL_FROM: 'a@b.com' }, PROD)
+		).toThrow(/SMTP_HOST/);
+	});
+
+	it('rejects port 25, which Cloudflare blocks', () => {
+		expect(() =>
+			resolveEmailProvider(
+				{ EMAIL_PROVIDER: 'smtp', SMTP_HOST: 'smtp.acme.com', SMTP_PORT: '25', EMAIL_FROM: 'a@b' },
+				PROD
+			)
+		).toThrow(/blocked/);
+	});
+
+	it('rejects a non-numeric port', () => {
+		expect(() =>
+			resolveEmailProvider(
+				{
+					EMAIL_PROVIDER: 'smtp',
+					SMTP_HOST: 'smtp.acme.com',
+					SMTP_PORT: 'submission',
+					EMAIL_FROM: 'a@b'
+				},
+				PROD
+			)
+		).toThrow(/SMTP_PORT/);
+	});
+
+	it('rejects half-configured credentials', () => {
+		expect(() =>
+			resolveEmailProvider(
+				{
+					EMAIL_PROVIDER: 'smtp',
+					SMTP_HOST: 'smtp.acme.com',
+					SMTP_USERNAME: 'mailer',
+					EMAIL_FROM: 'a@b'
+				},
+				PROD
+			)
+		).toThrow(/SMTP_PASSWORD/);
+	});
+
+	it('rejects a non-boolean SMTP_SECURE', () => {
+		expect(() =>
+			resolveEmailProvider(
+				{ EMAIL_PROVIDER: 'smtp', SMTP_HOST: 'h', SMTP_SECURE: 'yes', EMAIL_FROM: 'a@b' },
+				PROD
+			)
+		).toThrow(/SMTP_SECURE/);
+	});
+
 	it('ignores surrounding whitespace and casing', () => {
 		expect(resolveEmailProvider({ EMAIL_PROVIDER: '  CONSOLE  ' }, PROD).name).toBe('console');
 	});
@@ -56,5 +125,41 @@ describe('resolveEmailProvider', () => {
 		expect(() => resolveEmailProvider({ RESEND_API_KEY: '   ' }, PROD)).toThrow(
 			EmailConfigurationError
 		);
+	});
+});
+
+describe('resolveSmtpConfig', () => {
+	const BASE = { SMTP_HOST: 'smtp.acme.com', EMAIL_FROM: 'Acme <no@acme.com>' };
+
+	it('defaults to the submission port with STARTTLS', () => {
+		const config = resolveSmtpConfig(BASE);
+		expect(config.port).toBe(587);
+		expect(config.secure).toBe(false);
+	});
+
+	it('switches to implicit TLS on 465', () => {
+		expect(resolveSmtpConfig({ ...BASE, SMTP_PORT: '465' }).secure).toBe(true);
+	});
+
+	it('lets SMTP_SECURE override the port-derived default', () => {
+		expect(resolveSmtpConfig({ ...BASE, SMTP_PORT: '465', SMTP_SECURE: 'false' }).secure).toBe(
+			false
+		);
+		expect(resolveSmtpConfig({ ...BASE, SMTP_PORT: '2525', SMTP_SECURE: 'true' }).secure).toBe(
+			true
+		);
+	});
+
+	it('leaves credentials unset for an unauthenticated relay', () => {
+		const config = resolveSmtpConfig(BASE);
+		expect(config.username).toBeUndefined();
+		expect(config.password).toBeUndefined();
+	});
+
+	it('carries credentials through when both are given', () => {
+		expect(resolveSmtpConfig({ ...BASE, SMTP_USERNAME: 'u', SMTP_PASSWORD: 'p' })).toMatchObject({
+			username: 'u',
+			password: 'p'
+		});
 	});
 });
