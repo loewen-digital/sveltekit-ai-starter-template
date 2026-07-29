@@ -1,5 +1,11 @@
 import { fail } from '@sveltejs/kit';
-import { validateEmail, validatePassword, validatePasswordConfirm, normalizeEmail } from '$lib/shared/validation.js';
+import {
+	validateEmail,
+	validatePassword,
+	validatePasswordConfirm,
+	normalizeEmail
+} from '$lib/shared/validation.js';
+import { getLucia } from '$lib/features/auth/server/auth.js';
 import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
 import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';
 import type { Actions, PageServerLoad } from './$types';
@@ -38,7 +44,7 @@ export const actions: Actions = {
 		return { emailSuccess: 'Email updated. Please check your inbox to verify your new email.' };
 	},
 
-	updatePassword: async ({ request, locals }) => {
+	updatePassword: async ({ request, locals, cookies }) => {
 		if (!locals.user) {
 			return fail(401, { passwordError: 'Not authenticated' });
 		}
@@ -70,6 +76,16 @@ export const actions: Actions = {
 		if (result.error) {
 			return fail(400, { passwordError: result.error });
 		}
+
+		// updatePassword invalidated every session, including this one. Issue a
+		// fresh session so the user who just changed their password stays in.
+		const lucia = getLucia();
+		const session = await lucia.createSession(locals.user.id, {});
+		const sessionCookie = lucia.createSessionCookie(session.id);
+		cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: '.',
+			...sessionCookie.attributes
+		});
 
 		return { passwordSuccess: 'Password updated successfully' };
 	}

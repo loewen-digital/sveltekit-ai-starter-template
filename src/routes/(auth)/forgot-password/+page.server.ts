@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { normalizeEmail, validateEmail } from '$lib/shared/validation.js';
+import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
 import { requestPasswordReset } from '$lib/features/auth/server/password-reset.js';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -10,7 +11,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, url }) => {
+	default: async (event) => {
+		const limited = checkAuthRateLimit(event);
+		if (limited) return limited;
+
+		const { request, url } = event;
 		const formData = await request.formData();
 		const email = formData.get('email');
 

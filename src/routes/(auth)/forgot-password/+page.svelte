@@ -6,6 +6,8 @@
 
 	let email = $state('');
 	let loading = $state(false);
+
+	let error = $derived(form?.error || '');
 </script>
 
 <div class="flex min-h-screen items-center justify-center px-4">
@@ -16,7 +18,11 @@
 				Enter your email and we'll send you a reset link.
 			</p>
 
-			{#if form?.success}
+			{#if error}
+				<div class="mb-4">
+					<Alert variant="danger">{error}</Alert>
+				</div>
+			{:else if form?.success}
 				<div class="mb-4">
 					<Alert variant="success">
 						If an account with that email exists, we've sent a password reset link.

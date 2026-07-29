@@ -5,11 +5,7 @@ export async function navigateToProfile(page: Page): Promise<void> {
 	await page.waitForURL('/profile');
 }
 
-export async function changeEmail(
-	page: Page,
-	newEmail: string,
-	password: string
-): Promise<void> {
+export async function changeEmail(page: Page, newEmail: string, password: string): Promise<void> {
 	await page.locator('input[name="email"]').fill(newEmail);
 	await page.locator('input[name="password"]').fill(password);
 	await page.getByRole('button', { name: 'Update Email' }).click();

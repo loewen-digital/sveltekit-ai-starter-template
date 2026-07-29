@@ -1,4 +1,5 @@
 import { hash } from '@node-rs/argon2';
+import { getLucia } from './auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable, passwordResetTokenTable } from '$lib/server/db/schema.js';
 import { sendEmail } from '$lib/server/email/index.js';
@@ -74,15 +75,16 @@ export async function resetPassword(
 
 	const passwordHash = await hash(newPassword, ARGON2_CONFIG);
 
-	await db
-		.update(userTable)
-		.set({ passwordHash })
-		.where(eq(userTable.id, resetToken.userId));
+	await db.update(userTable).set({ passwordHash }).where(eq(userTable.id, resetToken.userId));
 
 	// Delete all reset tokens for this user
 	await db
 		.delete(passwordResetTokenTable)
 		.where(eq(passwordResetTokenTable.userId, resetToken.userId));
+
+	// Invalidate every existing session — a reset is the recovery path after a
+	// takeover, so any session an attacker still holds must die with it.
+	await getLucia().invalidateUserSessions(resetToken.userId);
 
 	logger.info('Password reset completed', { userId: resetToken.userId });
 	return {};

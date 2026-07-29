@@ -26,7 +26,10 @@
 	};
 </script>
 
-<div class="flex items-start gap-3 rounded-md border p-4 shadow-lg {variantClasses[variant]}" role="alert">
+<div
+	class="flex items-start gap-3 rounded-md border p-4 shadow-lg {variantClasses[variant]}"
+	role="alert"
+>
 	<span class="text-lg leading-none" aria-hidden="true">{icons[variant]}</span>
 
 	<div class="flex-1 text-sm">

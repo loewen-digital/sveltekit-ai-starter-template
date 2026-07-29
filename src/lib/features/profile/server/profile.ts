@@ -1,4 +1,5 @@
 import { verify, hash } from '@node-rs/argon2';
+import { getLucia } from '$lib/features/auth/server/auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
 import { normalizeEmail } from '$lib/shared/validation.js';
@@ -65,6 +66,10 @@ export async function updatePassword(
 		.update(userTable)
 		.set({ passwordHash, updatedAt: new Date() })
 		.where(eq(userTable.id, userId));
+
+	// Drop every session, including the caller's. The caller gets a fresh one
+	// issued by the form action; everyone else is logged out.
+	await getLucia().invalidateUserSessions(userId);
 
 	return {};
 }
