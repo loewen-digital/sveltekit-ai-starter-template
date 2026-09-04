@@ -12,18 +12,18 @@ npm run dev
 
 ## Scripts
 
-| Command               | Description                   |
-| --------------------- | ----------------------------- |
-| `npm run dev`         | Start dev server              |
-| `npm run build`       | Production build (Cloudflare) |
-| `npm run check`       | svelte-check + TypeScript     |
-| `npm run lint`        | ESLint + Prettier             |
-| `npm run format`      | Format code with Prettier     |
-| `npm test`            | Run Vitest unit tests         |
-| `npm run test:e2e`    | Run Playwright E2E tests      |
-| `npm run db:generate` | Generate Drizzle migrations   |
-| `npm run db:migrate`  | Apply Drizzle migrations      |
-| `npm run db:studio`   | Open Drizzle Studio           |
+| Command               | Description                           |
+| --------------------- | ------------------------------------- |
+| `npm run dev`         | Start dev server                      |
+| `npm run build`       | Production build (Cloudflare Workers) |
+| `npm run check`       | svelte-check + TypeScript             |
+| `npm run lint`        | ESLint + Prettier                     |
+| `npm run format`      | Format code with Prettier             |
+| `npm test`            | Run Vitest unit tests                 |
+| `npm run test:e2e`    | Run Playwright E2E tests              |
+| `npm run db:generate` | Generate Drizzle migrations           |
+| `npm run db:migrate`  | Apply Drizzle migrations              |
+| `npm run db:studio`   | Open Drizzle Studio                   |
 
 ## Tech Stack
 
@@ -33,7 +33,7 @@ npm run dev
 - **Auth:** Lucia Auth v3 + Drizzle Adapter
 - **Database:** Drizzle ORM + SQLite (local) / D1 (Cloudflare)
 - **Testing:** Vitest (Unit) + Playwright (E2E)
-- **Deployment:** Cloudflare Pages
+- **Deployment:** Cloudflare Workers
 
 ## Project Structure
 
@@ -108,8 +108,9 @@ Two constraints come from the runtime, not from this template:
 
 - **SMTP does not work under `npm run dev`.** It needs Cloudflare's TCP socket
   API (`cloudflare:sockets`), which Node does not have. Develop against
-  `EMAIL_PROVIDER=console`, and use `wrangler pages dev` when you need to
-  exercise SMTP locally. The provider says so explicitly if you try.
+  `EMAIL_PROVIDER=console`, and use `npm run build && npx wrangler dev` when
+  you need to exercise SMTP locally. The provider says so explicitly if you
+  try.
 - **Port 25 is blocked** by Cloudflare. Use 587 (STARTTLS) or 465 (implicit
   TLS). TLS mode is derived from the port; `SMTP_SECURE` overrides it.
 
@@ -145,9 +146,21 @@ Import components:
 
 ## Deployment
 
-Configured for Cloudflare Pages. Update `wrangler.toml` with your D1 database ID, then:
+Configured for Cloudflare Workers. Update `wrangler.jsonc` with your D1 database ID, then:
 
 ```bash
 npm run build
-npx wrangler pages deploy
+npx wrangler deploy
 ```
+
+To serve the production build locally (needed to exercise anything that
+depends on the Workers runtime, like SMTP — see below):
+
+```bash
+npm run build
+npx wrangler dev
+```
+
+`npm run preview` runs a plain Vite preview server instead: fine for
+checking pages and forms, but it runs on Node, not the Workers runtime, so
+it can't exercise Workers-only APIs (`cloudflare:sockets`, D1, etc.).
