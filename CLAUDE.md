@@ -82,7 +82,7 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 
 1. Reviews und Inline-Kommentare seit dem letzten Commit lesen (`gh pr view <n> --json reviews,comments`, `gh api repos/{owner}/{repo}/pulls/<n>/comments`). Gibt es nichts zu tun: Stopp, kein Kommentar.
 2. Jeden Punkt beheben oder im Thread begründen, warum nicht. Security-Findings nie abtun.
-3. Check, Test, Build grün, pushen, dann ein PR-Kommentar: `Review-Findings umgesetzt in <kurzer sha>, bereit für Re-Review.` Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
+3. Check, Test, Build grün, pushen, dann ein PR-Kommentar: `Review-Findings umgesetzt in <kurzer sha>.` Das Re-Review fordert der Workflow an. Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
 
 **Immer:**
 
