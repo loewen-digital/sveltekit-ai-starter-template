@@ -69,7 +69,7 @@ const deliverViaWorkerMailer: SmtpSend = async (config, envelope) => {
 			throw new Error(
 				'SMTP needs the Cloudflare Workers runtime (cloudflare:sockets) and cannot run under ' +
 					'`vite dev`. Use EMAIL_PROVIDER=console for local development, or run the app with ' +
-					'`wrangler pages dev` to exercise SMTP.'
+					'`wrangler dev` (after `npm run build`) to exercise SMTP.'
 			);
 		}
 		throw error;

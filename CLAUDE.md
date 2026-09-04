@@ -8,7 +8,7 @@
 - Lucia Auth v3 + Drizzle Adapter
 - Drizzle ORM + SQLite (lokal) / D1 (Cloudflare)
 - Vitest (Unit) + Playwright (E2E)
-- Cloudflare Pages Adapter
+- Cloudflare Workers Adapter (`@sveltejs/adapter-cloudflare` 7)
 - Node 22, npm
 
 ## Commands
