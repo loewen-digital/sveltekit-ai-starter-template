@@ -73,10 +73,10 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 
 1. Issue lesen: `gh issue view <n> --json title,body,labels,comments`. Fehlen Akzeptanzkriterien: Kommentar mit der konkreten Frage, Label `needs-human` setzen, `ready` entfernen, Stopp.
 2. Branch `claude/issue-<n>-<slug>` von main.
-3. Umsetzen nach den Regeln oben. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`), minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
+3. Umsetzen nach den Regeln oben. Verbindlich sind die Akzeptanzkriterien, nicht der Lösungsvorschlag im Issue: bauen, was in dieses Projekt passt und seinen Konventionen folgt, auch wenn das vom Vorschlag abweicht. Jede Abweichung im PR unter „Abweichungen vom Issue“ begründen. Gehört der Bedarf nicht in dieses Projekt: Kommentar mit Begründung, `needs-human`, `ready` entfernen, Stopp. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`) mit Bedarf und hiesigem Kontext, höchstens ein unverbindlicher Vorschlag; minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
 4. `npm run check && npm test && npm run build` grün. Nach drei Fehlversuchen: Draft-PR öffnen, `needs-human`, Stopp.
 5. Eigenen Diff reviewen: Security, tote Pfade, Fehlerbehandlung, Barrierefreiheit.
-6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
+6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, Abschnitt „Abweichungen vom Issue“ (oder „keine“), explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
 
 **Review** (Review auf einem `claude/*`-PR):
 
