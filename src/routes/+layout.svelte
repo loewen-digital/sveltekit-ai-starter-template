@@ -9,11 +9,11 @@
 
 	let { children } = $props();
 
-	onMount(() => {
+	onMount(async () => {
 		// Client-only: `/define` calls `customElements.define`, so it must not
 		// load during SSR. The server already rendered these tags (see
 		// src/hooks.server.ts); this upgrades and hydrates them in place.
-		import('@webtides/element-library/button/define');
+		await import('@webtides/element-library/button/define');
 	});
 </script>
 
