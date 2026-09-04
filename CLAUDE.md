@@ -86,6 +86,7 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 
 **Immer:**
 
+- Umfang und Sicherheit: vor der Umsetzung den Scope einschätzen. Braucht das Issue mehr als einen PR (mehrere unabhängige Teile, mehr als ca. 15 Dateien): Sub-Issues mit `gh issue create` anlegen (das erste mit `ready`, der Rest ohne Label), die Liste als Kommentar ans Eltern-Issue, nur das erste bearbeiten. Nach dem ersten sinnvollen Schritt committen und pushen und weiter pushen, damit nichts verloren geht, wenn der Run sein Turn-Limit erreicht.
 - Nie fragen. Blockiert heißt: Frage mit Optionen als Kommentar, `needs-human`, Stopp.
 - Ein Issue, ein Branch, ein PR. Conventional Commits (`feat:`, `fix:`, `chore:`, ...). Nie force-pushen. Nie Secrets committen.
 - Gemergt wird von Eddy, nicht vom Agenten.
