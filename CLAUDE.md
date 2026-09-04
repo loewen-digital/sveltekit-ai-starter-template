@@ -89,3 +89,4 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 - Nie fragen. Blockiert heißt: Frage mit Optionen als Kommentar, `needs-human`, Stopp.
 - Ein Issue, ein Branch, ein PR. Conventional Commits (`feat:`, `fix:`, `chore:`, ...). Nie force-pushen. Nie Secrets committen.
 - Gemergt wird von Eddy, nicht vom Agenten.
+- Nie Dateien unter `.github/workflows/` anlegen oder ändern: der App-Token hat keinen `workflows`-Scope, der Push wird abgelehnt. Die nötige Workflow-Änderung als `needs-human`-Issue beschreiben und weitermachen.
