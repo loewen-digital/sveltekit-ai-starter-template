@@ -73,10 +73,10 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 
 1. Issue lesen: `gh issue view <n> --json title,body,labels,comments`. Fehlen Akzeptanzkriterien: Kommentar mit der konkreten Frage, Label `needs-human` setzen, `ready` entfernen, Stopp.
 2. Branch `claude/issue-<n>-<slug>` von main.
-3. Umsetzen nach den Regeln oben. Verbindlich sind die Akzeptanzkriterien, nicht der Lösungsvorschlag im Issue: bauen, was in dieses Projekt passt und seinen Konventionen folgt, auch wenn das vom Vorschlag abweicht. Jede Abweichung im PR unter „Abweichungen vom Issue“ begründen. Gehört der Bedarf nicht in dieses Projekt: Kommentar mit Begründung, `needs-human`, `ready` entfernen, Stopp. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`) mit Bedarf und hiesigem Kontext, höchstens ein unverbindlicher Vorschlag; minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
+3. Umsetzen nach den Regeln oben. Verbindlich sind die Akzeptanzkriterien, nicht der Lösungsvorschlag im Issue: bauen, was in dieses Projekt passt und seinen Konventionen folgt, auch wenn das vom Vorschlag abweicht. Jede Abweichung im PR unter `## Deviations from the issue` begründen. Gehört der Bedarf nicht in dieses Projekt: Kommentar mit Begründung, `needs-human`, `ready` entfernen, Stopp. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`) mit Bedarf und hiesigem Kontext, höchstens ein unverbindlicher Vorschlag; minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
 4. `npm run check && npm test && npm run build` grün. Nach drei Fehlversuchen: Draft-PR öffnen, `needs-human`, Stopp.
 5. Eigenen Diff reviewen: Security, tote Pfade, Fehlerbehandlung, Barrierefreiheit.
-6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, Abschnitt „Abweichungen vom Issue“ (oder „keine“), explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
+6. PR öffnen (`gh pr create`) im PR-Format unten, mit `Closes #<n>`. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
 
 **Review** (Review auf einem `claude/*`-PR):
 
@@ -91,3 +91,11 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 - Ein Issue, ein Branch, ein PR. Conventional Commits (`feat:`, `fix:`, `chore:`, ...). Nie force-pushen. Nie Secrets committen.
 - Gemergt wird von Eddy, nicht vom Agenten.
 - Nie Dateien unter `.github/workflows/` anlegen oder ändern: der App-Token hat keinen `workflows`-Scope, der Push wird abgelehnt. Die nötige Workflow-Änderung als `needs-human`-Issue beschreiben und weitermachen.
+
+**Für Menschen schreiben** (Issues, PRs, Kommentare, auf GitHub immer Englisch):
+
+- Alles, was du schreibst, liest eine Person, die in dreißig Sekunden entscheiden will. Ergebnis zuerst, Entscheidungen sichtbar, Details eingeklappt in `<details><summary>Details</summary>…</details>`. Nie Information weglassen, nur nach unten schieben.
+- PR-Text in dieser Reihenfolge, höchstens 15 Zeilen außerhalb von `<details>`: ein Satz, was sich geändert hat und warum; `## Deviations from the issue` (Bullets oder „none“); `## Needs Eddy` (berührte Auth, Payments, Schema oder Secrets; neue Secrets; angelegte Upstream-Issues; Folgearbeiten; oder „nothing“); `## Verified` (die Befehle, die grün waren, eine Zeile). Design-Überlegungen, Fehlversuche und Notizen pro Datei in `<details>` oder in die Commit-Messages.
+- Issues, die du anlegst (Sub-Issues, Upstream): höchstens 20 Zeilen außerhalb von `<details>`: `## Goal` (ein Satz), `## Context` (warum, für wen, Link zum Ursprungs-Issue), `## Acceptance criteria` (Checkboxen, nur Verhalten), `## Proposal (non-binding)` falls vorhanden, `## Out of scope`.
+- Kommentare: ein Satz plus sha oder Link. Begründung, falls nötig, in `<details>`.
+- Commit-Messages tragen die Details: Conventional-Commits-Betreff, Body sagt warum.
