@@ -64,3 +64,28 @@
 - Nach jeder Änderung: npm run check
 - Forms: Progressive Enhancement mit SvelteKit Form Actions
 - Server-Only Code: Immer in .server.ts oder server/ Verzeichnis[settings.local.json](../rss-content-hub/.claude/settings.local.json)
+
+## Agent Loop (GitHub Actions)
+
+Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beantwortet Rückfragen.
+
+**Issue** (Label `ready`):
+
+1. Issue lesen: `gh issue view <n> --json title,body,labels,comments`. Fehlen Akzeptanzkriterien: Kommentar mit der konkreten Frage, Label `needs-human` setzen, `ready` entfernen, Stopp.
+2. Branch `claude/issue-<n>-<slug>` von main.
+3. Umsetzen nach den Regeln oben. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`), minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
+4. `npm run check && npm test && npm run build` grün. Nach drei Fehlversuchen: Draft-PR öffnen, `needs-human`, Stopp.
+5. Eigenen Diff reviewen: Security, tote Pfade, Fehlerbehandlung, Barrierefreiheit.
+6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Danach `@codex review` als PR-Kommentar posten.
+
+**Review** (Review auf einem `claude/*`-PR):
+
+1. Reviews und Inline-Kommentare seit dem letzten Commit lesen (`gh pr view <n> --json reviews,comments`, `gh api repos/{owner}/{repo}/pulls/<n>/comments`). Gibt es nichts zu tun: Stopp, kein Kommentar.
+2. Jeden Punkt beheben oder im Thread begründen, warum nicht. Security-Findings nie abtun.
+3. Check, Test, Build grün, pushen, `@codex review` kommentieren. Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
+
+**Immer:**
+
+- Nie fragen. Blockiert heißt: Frage mit Optionen als Kommentar, `needs-human`, Stopp.
+- Ein Issue, ein Branch, ein PR. Conventional Commits (`feat:`, `fix:`, `chore:`, ...). Nie force-pushen. Nie Secrets committen.
+- Gemergt wird von Eddy, nicht vom Agenten.
