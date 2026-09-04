@@ -76,13 +76,13 @@ Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beant
 3. Umsetzen nach den Regeln oben. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`), minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
 4. `npm run check && npm test && npm run build` grün. Nach drei Fehlversuchen: Draft-PR öffnen, `needs-human`, Stopp.
 5. Eigenen Diff reviewen: Security, tote Pfade, Fehlerbehandlung, Barrierefreiheit.
-6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Danach `@codex review` als PR-Kommentar posten.
+6. PR öffnen (`gh pr create`): Zusammenfassung, `Closes #<n>`, Testplan, explizit sagen, ob Auth, Payments, Schema oder Secrets berührt sind. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
 
 **Review** (Review auf einem `claude/*`-PR):
 
 1. Reviews und Inline-Kommentare seit dem letzten Commit lesen (`gh pr view <n> --json reviews,comments`, `gh api repos/{owner}/{repo}/pulls/<n>/comments`). Gibt es nichts zu tun: Stopp, kein Kommentar.
 2. Jeden Punkt beheben oder im Thread begründen, warum nicht. Security-Findings nie abtun.
-3. Check, Test, Build grün, pushen, `@codex review` kommentieren. Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
+3. Check, Test, Build grün, pushen, dann ein PR-Kommentar: `Review-Findings umgesetzt in <kurzer sha>, bereit für Re-Review.` Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
 
 **Immer:**
 
