@@ -67,35 +67,39 @@
 
 ## Agent Loop (GitHub Actions)
 
-Claude läuft unbeaufsichtigt über `.github/workflows/agent.yml`. Niemand beantwortet Rückfragen.
+Claude runs unattended via `.github/workflows/agent.yml`. Nobody answers questions.
 
-**Issue** (Label `ready`):
+**Issue** (label `ready`):
 
-1. Issue lesen: `gh issue view <n> --json title,body,labels,comments`. Fehlen Akzeptanzkriterien: Kommentar mit der konkreten Frage, Label `needs-human` setzen, `ready` entfernen, Stopp.
-2. Branch `claude/issue-<n>-<slug>` von main.
-3. Umsetzen nach den Regeln oben. Verbindlich sind die Akzeptanzkriterien, nicht der Lösungsvorschlag im Issue: bauen, was in dieses Projekt passt und seinen Konventionen folgt, auch wenn das vom Vorschlag abweicht. Jede Abweichung im PR unter `## Deviations from the issue` begründen. Gehört der Bedarf nicht in dieses Projekt: Kommentar mit Begründung, `needs-human`, `ready` entfernen, Stopp. Fehlt etwas in einer eigenen Lib (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): Issue dort anlegen (`gh issue create --repo <owner/lib>`) mit Bedarf und hiesigem Kontext, höchstens ein unverbindlicher Vorschlag; minimalen Workaround mit `// UPSTREAM: <issue-url>` markieren, weitermachen. Nie auf Upstream warten.
-4. `npm run check && npm test && npm run build` grün. Nach drei Fehlversuchen: Draft-PR öffnen, `needs-human`, Stopp.
-5. Eigenen Diff reviewen: Security, tote Pfade, Fehlerbehandlung, Barrierefreiheit.
-6. PR öffnen (`gh pr create`) im PR-Format unten, mit `Closes #<n>`. Kein `@codex review` posten: Codex ignoriert Kommentare von Bots. Eddy fordert das Review an.
+1. Read the issue: `gh issue view <n> --json title,body,labels,comments`. If acceptance criteria are missing: comment the concrete question, add label `needs-human`, remove `ready`, stop.
+2. Branch `claude/issue-<n>-<slug>` from the default branch.
+3. Implement following the rules above. Acceptance criteria are binding; a solution proposed in the issue is not. Build what fits this project and its conventions, even where that differs from the proposal, and explain every difference in the PR under "Deviations from the issue". If the need does not belong in this project: comment why, label `needs-human`, remove `ready`, stop. If something is missing in one of our own libraries (fullstack, flatdb, sveltekit-ai-orchestrator, element-js, element-js-ssr-renderer, element-library): open an issue there (`gh issue create --repo <owner/lib>`) that states the need and the context here, with at most a non-binding proposal; add the smallest workaround marked `// UPSTREAM: <issue-url>`, keep going. Never wait for upstream.
+4. `npm run check && npm test && npm run build` must pass. After three failed attempts: open a draft PR, label `needs-human`, stop.
+5. Review your own diff: security, dead code, error handling, accessibility.
+6. Open the PR (`gh pr create`) in the PR format below, with `Closes #<n>`. Do not post `@codex review`: Codex ignores comments from bots. Eddy requests the review.
 
-**Review** (Review auf einem `claude/*`-PR):
+**Review** (a review on a `claude/*` PR):
 
-1. Reviews und Inline-Kommentare seit dem letzten Commit lesen (`gh pr view <n> --json reviews,comments`, `gh api repos/{owner}/{repo}/pulls/<n>/comments`). Gibt es nichts zu tun: Stopp, kein Kommentar.
-2. Jeden Punkt beheben oder im Thread begründen, warum nicht. Security-Findings nie abtun.
-3. Check, Test, Build grün, pushen, dann ein PR-Kommentar: `Review-Findings umgesetzt in <kurzer sha>.` Das Re-Review fordert der Workflow an. Nach drei Fix-Runden auf einem PR: `needs-human`, Stopp.
+1. Read reviews and inline comments since the last commit (`gh pr view <n> --json reviews,comments`, `gh api repos/{owner}/{repo}/pulls/<n>/comments`). Nothing to do: stop, no comment.
+2. Fix every point or explain in the thread why not. Never dismiss a security finding.
+3. Validation green, push, then one PR comment: `Review findings addressed in <short sha>.` The workflow requests the re-review. After three fix rounds on one PR: `needs-human`, stop.
 
-**Immer:**
+**Always:**
 
-- Umfang und Sicherheit: vor der Umsetzung den Scope einschätzen. Braucht das Issue mehr als einen PR (mehrere unabhängige Teile, mehr als ca. 15 Dateien): Sub-Issues mit `gh issue create` anlegen (das erste mit `ready`, der Rest ohne Label), die Liste als Kommentar ans Eltern-Issue, nur das erste bearbeiten. Nach dem ersten sinnvollen Schritt committen und pushen und weiter pushen, damit nichts verloren geht, wenn der Run sein Turn-Limit erreicht.
-- Nie fragen. Blockiert heißt: Frage mit Optionen als Kommentar, `needs-human`, Stopp.
-- Ein Issue, ein Branch, ein PR. Conventional Commits (`feat:`, `fix:`, `chore:`, ...). Nie force-pushen. Nie Secrets committen.
-- Gemergt wird von Eddy, nicht vom Agenten.
-- Nie Dateien unter `.github/workflows/` anlegen oder ändern: der App-Token hat keinen `workflows`-Scope, der Push wird abgelehnt. Die nötige Workflow-Änderung als `needs-human`-Issue beschreiben und weitermachen.
+- Size and safety: before implementing, judge the scope. If it needs more than one PR (several independent parts, more than ~15 files), create sub-issues with `gh issue create` (the first labelled `ready`, the rest unlabelled), attach each to the parent as a GitHub sub-issue, comment the list on the parent, and work only the first. Commit and push the branch after the first meaningful step and keep pushing, so nothing is lost when the run hits its turn limit.
+- Dependencies are GitHub relations, never prose. When an issue cannot be finished before another one is closed, set "blocked by"; when you split work, set sub-issues. Lines like "Blocked by: #3" or "depends on #6" in the text are not read by the cockpit. Ids via `gh issue view <n> --json id --jq .id` (add `--repo` for another repo), then:
+  `gh api graphql -f query='mutation($a:ID!,$b:ID!){addBlockedBy(input:{issueId:$a,blockingIssueId:$b}){clientMutationId}}' -F a=<id of the waiting issue> -F b=<id of the blocker>`
+  `gh api graphql -f query='mutation($a:ID!,$b:ID!){addSubIssue(input:{issueId:$a,subIssueId:$b}){clientMutationId}}' -F a=<id of the parent> -F b=<id of the sub-issue>`
+  An upstream issue with a workaround in place is not a blocker; set "blocked by" only when the work truly cannot proceed.
+- Never ask. Blocked means: comment the question with options, `needs-human`, stop.
+- One issue, one branch, one PR. Conventional commits (`feat:`, `fix:`, `chore:`, ...). Never force-push. Never commit secrets.
+- Eddy merges, not the agent.
+- Never create or modify files under `.github/workflows/`: the App token lacks the `workflows` scope and the push is rejected. Describe the needed workflow change in a `needs-human` issue instead and continue.
 
-**Für Menschen schreiben** (Issues, PRs, Kommentare, auf GitHub immer Englisch):
+**Writing for humans** (issues, PRs, comments):
 
-- Alles, was du schreibst, liest eine Person, die in dreißig Sekunden entscheiden will. Ergebnis zuerst, Entscheidungen sichtbar, Details eingeklappt in `<details><summary>Details</summary>…</details>`. Nie Information weglassen, nur nach unten schieben.
-- PR-Text in dieser Reihenfolge, höchstens 15 Zeilen außerhalb von `<details>`: ein Satz, was sich geändert hat und warum; `## Deviations from the issue` (Bullets oder „none“); `## Needs Eddy` (berührte Auth, Payments, Schema oder Secrets; neue Secrets; angelegte Upstream-Issues; Folgearbeiten; oder „nothing“); `## Verified` (die Befehle, die grün waren, eine Zeile). Design-Überlegungen, Fehlversuche und Notizen pro Datei in `<details>` oder in die Commit-Messages.
-- Issues, die du anlegst (Sub-Issues, Upstream): höchstens 20 Zeilen außerhalb von `<details>`: `## Goal` (ein Satz), `## Context` (warum, für wen, Link zum Ursprungs-Issue), `## Acceptance criteria` (Checkboxen, nur Verhalten), `## Proposal (non-binding)` falls vorhanden, `## Out of scope`.
-- Kommentare: ein Satz plus sha oder Link. Begründung, falls nötig, in `<details>`.
-- Commit-Messages tragen die Details: Conventional-Commits-Betreff, Body sagt warum.
+- Everything you write is read by one person who wants to decide in thirty seconds. Result first, decisions visible, details collapsed in `<details><summary>Details</summary>…</details>`. Never drop information; move it down.
+- PR body, in this order, at most 15 lines outside `<details>`: one sentence on what changed and why; `## Deviations from the issue` (bullets, or "none"); `## Needs Eddy` (touched auth, payments, schema or secrets; new secrets; upstream issues filed; follow-ups; or "nothing"); `## Verified` (the commands that passed, one line). Design reasoning, what was tried and failed, and file-by-file notes go into `<details>` or the commit messages.
+- Issues you create (sub-issues, upstream): at most 20 lines outside `<details>`: `## Goal` (one sentence), `## Context` (why, for whom, link to the source issue), `## Acceptance criteria` (checkboxes, behaviour only), `## Proposal (non-binding)` if you have one, `## Out of scope`.
+- Comments: one sentence plus a sha or link. Reasoning, if needed, in `<details>`.
+- Commit messages carry the detail: conventional subject, body says why.
