@@ -4,59 +4,26 @@
 	let {
 		open = $bindable(false),
 		title = '',
-		children
+		children,
+		footer
 	}: {
 		open?: boolean;
 		title?: string;
 		children?: Snippet;
+		/** Rendered in the dialog's footer slot, typically the action buttons. */
+		footer?: Snippet;
 	} = $props();
-
-	let dialogEl: HTMLDialogElement | undefined = $state();
-
-	$effect(() => {
-		if (!dialogEl) return;
-		if (open) {
-			dialogEl.showModal();
-		} else {
-			dialogEl.close();
-		}
-	});
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			open = false;
-		}
-	}
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === dialogEl) {
-			open = false;
-		}
-	}
 </script>
 
-<dialog
-	bind:this={dialogEl}
-	onkeydown={handleKeydown}
-	onclick={handleBackdropClick}
-	class="max-w-lg rounded-lg border border-border bg-surface p-0 shadow-lg backdrop:bg-black/50 backdrop:backdrop-blur-sm open:animate-in open:fade-in"
->
-	<div class="p-6">
-		{#if title}
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-lg font-semibold text-text-primary">{title}</h2>
-				<button
-					onclick={() => (open = false)}
-					class="text-text-muted transition-colors hover:text-text-primary"
-					aria-label="Close"
-				>
-					✕
-				</button>
-			</div>
-		{/if}
-
-		{#if children}
-			{@render children()}
-		{/if}
-	</div>
-</dialog>
+<!--
+	The element is built on the native <dialog>: focus trap, Escape, backdrop,
+	scroll lock and labelling are its job. `dialog-hide` fires for every way it
+	closes (close button, Escape, overlay click, `open` set to false), which
+	keeps `open` in sync for bind:open.
+-->
+<el-dialog {open} label={title} ondialog-hide={() => (open = false)}>
+	{@render children?.()}
+	{#if footer}
+		<div slot="footer" class="flex justify-end gap-2">{@render footer()}</div>
+	{/if}
+</el-dialog>

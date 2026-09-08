@@ -31,6 +31,20 @@ declare module 'svelte/elements' {
 			'password-toggle'?: Toggle;
 			'password-visible'?: Toggle;
 		};
+		'el-dialog': HTMLAttributes<HTMLElement> & {
+			open?: Toggle;
+			label?: string;
+			'no-header'?: Toggle;
+			'close-label'?: string;
+			'ondialog-show'?: (event: CustomEvent) => void;
+			'ondialog-after-show'?: (event: CustomEvent) => void;
+			'ondialog-hide'?: (event: CustomEvent) => void;
+			'ondialog-after-hide'?: (event: CustomEvent) => void;
+			'ondialog-initial-focus'?: (event: CustomEvent) => void;
+			'ondialog-request-close'?: (
+				event: CustomEvent<{ source: 'close-button' | 'keyboard' | 'overlay' }>
+			) => void;
+		};
 		'el-button': HTMLAttributes<HTMLElement> & {
 			variant?: 'default' | 'primary' | 'success' | 'neutral' | 'warning' | 'danger' | 'text';
 			size?: 'small' | 'medium' | 'large';
