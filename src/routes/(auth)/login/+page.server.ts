@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { verify } from '@node-rs/argon2';
+import { verifyPassword } from '$lib/server/password.js';
 import { getLucia } from '$lib/features/auth/server/auth.js';
 import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
 import { getDb } from '$lib/server/db/index.js';
@@ -39,12 +39,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid email or password', email: normalizedEmail });
 		}
 
-		const validPassword = await verify(user.passwordHash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const validPassword = await verifyPassword(password, user.passwordHash);
 
 		if (!validPassword) {
 			return fail(400, { error: 'Invalid email or password', email: normalizedEmail });

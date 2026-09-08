@@ -1,4 +1,4 @@
-import { hash } from '@node-rs/argon2';
+import { hashPassword } from '$lib/server/password.js';
 import { getLucia } from './auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable, passwordResetTokenTable } from '$lib/server/db/schema.js';
@@ -7,13 +7,6 @@ import { passwordResetEmail } from '$lib/server/email/templates.js';
 import { logger } from '$lib/server/logger.js';
 import { generateToken, hashToken, generateId, isTokenExpired } from '$lib/server/token.js';
 import { eq } from 'drizzle-orm';
-
-const ARGON2_CONFIG = {
-	memoryCost: 19456,
-	timeCost: 2,
-	outputLen: 32,
-	parallelism: 1
-};
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
@@ -84,7 +77,7 @@ export async function resetPassword(
 		return { error: 'Invalid or expired reset link' };
 	}
 
-	const passwordHash = await hash(newPassword, ARGON2_CONFIG);
+	const passwordHash = await hashPassword(newPassword);
 
 	await db.update(userTable).set({ passwordHash }).where(eq(userTable.id, resetToken.userId));
 

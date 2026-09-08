@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { hash } from '@node-rs/argon2';
+import { hashPassword } from '$lib/server/password.js';
 import { generateIdFromEntropySize } from 'lucia';
 import { getLucia } from '$lib/features/auth/server/auth.js';
 import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
@@ -60,12 +60,7 @@ export const actions: Actions = {
 		}
 
 		const userId = generateIdFromEntropySize(10);
-		const passwordHash = await hash(password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const passwordHash = await hashPassword(password);
 
 		await getDb().insert(userTable).values({
 			id: userId,

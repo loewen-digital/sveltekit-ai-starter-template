@@ -1,16 +1,9 @@
-import { verify, hash } from '@node-rs/argon2';
+import { hashPassword, verifyPassword } from '$lib/server/password.js';
 import { getLucia } from '$lib/features/auth/server/auth.js';
 import { getDb } from '$lib/server/db/index.js';
 import { userTable } from '$lib/server/db/schema.js';
 import { normalizeEmail } from '$lib/shared/validation.js';
 import { eq } from 'drizzle-orm';
-
-const ARGON2_CONFIG = {
-	memoryCost: 19456,
-	timeCost: 2,
-	outputLen: 32,
-	parallelism: 1
-};
 
 export async function updateEmail(
 	userId: string,
@@ -24,7 +17,7 @@ export async function updateEmail(
 		return { error: 'User not found' };
 	}
 
-	const validPassword = await verify(user.passwordHash, currentPassword, ARGON2_CONFIG);
+	const validPassword = await verifyPassword(currentPassword, user.passwordHash);
 	if (!validPassword) {
 		return { error: 'Incorrect password' };
 	}
@@ -55,12 +48,12 @@ export async function updatePassword(
 		return { error: 'User not found' };
 	}
 
-	const validPassword = await verify(user.passwordHash, currentPassword, ARGON2_CONFIG);
+	const validPassword = await verifyPassword(currentPassword, user.passwordHash);
 	if (!validPassword) {
 		return { error: 'Incorrect password' };
 	}
 
-	const passwordHash = await hash(newPassword, ARGON2_CONFIG);
+	const passwordHash = await hashPassword(newPassword);
 
 	await db
 		.update(userTable)
