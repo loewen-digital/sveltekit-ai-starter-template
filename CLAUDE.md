@@ -2,68 +2,68 @@
 
 ## Stack
 
-- SvelteKit v2, Svelte 5 (Runes: $state, $derived, $effect, $props, $bindable)
+- SvelteKit v2, Svelte 5 (runes: $state, $derived, $effect, $props, $bindable)
 - TypeScript strict mode
 - Tailwind CSS v4
-- Lucia Auth v3 + Drizzle Adapter
-- Drizzle ORM + SQLite (lokal) / D1 (Cloudflare)
-- Vitest (Unit) + Playwright (E2E)
-- Cloudflare Workers Adapter (`@sveltejs/adapter-cloudflare` 7)
+- Lucia Auth v3 + Drizzle adapter
+- Drizzle ORM + SQLite (local) / D1 (Cloudflare)
+- Vitest (unit) + Playwright (E2E)
+- Cloudflare Workers adapter (`@sveltejs/adapter-cloudflare` 7)
 - Node 22, npm
 
 ## Commands
 
-- `npm run dev` — Dev Server
-- `npm run build` — Production Build (Cloudflare)
+- `npm run dev` — dev server
+- `npm run build` — production build (Cloudflare)
 - `npm run check` — svelte-check + TypeScript
 - `npm run lint` — ESLint + Prettier
-- `npm test` — Vitest Unit Tests
-- `npm run test:e2e` — Playwright E2E Tests
-- `npm run db:generate` — Drizzle Migration generieren
-- `npm run db:migrate` — Drizzle Migration ausführen
+- `npm test` — Vitest unit tests
+- `npm run test:e2e` — Playwright E2E tests
+- `npm run db:generate` — generate a Drizzle migration
+- `npm run db:migrate` — run Drizzle migrations
 - `npm run db:studio` — Drizzle Studio
 
 ## Architecture
 
-- Feature-basiert: src/lib/features/[name]/
-- Design System: src/lib/design/components/
-- Server Code: src/lib/server/ (DB, shared server utils)
-- Feature Server Code: src/lib/features/[name]/server/
-- Route Groups: (auth) für Login/Register, (app) für geschützte Seiten
-- Shared Types: src/lib/shared/types/
+- Feature-based: src/lib/features/[name]/
+- Design system: src/lib/design/components/
+- Server code: src/lib/server/ (DB, shared server utils)
+- Feature server code: src/lib/features/[name]/server/
+- Route groups: (auth) for login/register, (app) for protected pages
+- Shared types: src/lib/shared/types/
 
 ## Svelte 5 — Hard Rules
 
-- IMMER Runes: $state, $derived, $effect
-- NIEMALS Svelte 4 Stores (writable, readable, derived aus svelte/store)
-- Event Handler: onclick, NICHT on:click
-- Props: let { prop1, prop2 } = $props(), NICHT export let
-- Bindable Props: $bindable() für Two-Way Binding
-- Children: {#snippet children}{/snippet} oder {@render children()}, NICHT <slot>
-- Für aktuelle Svelte 5 API: lies svelte.dev/llms.txt
+- ALWAYS runes: $state, $derived, $effect
+- NEVER Svelte 4 stores (writable, readable, derived from svelte/store)
+- Event handlers: onclick, NOT on:click
+- Props: let { prop1, prop2 } = $props(), NOT export let
+- Bindable props: $bindable() for two-way binding
+- Children: {#snippet children}{/snippet} or {@render children()}, NOT <slot>
+- For the current Svelte 5 API read svelte.dev/llms.txt
 
 ## Design System — Hard Rules
 
-- IMMER Komponenten aus $lib/design/components/ nutzen
-- NIEMALS eigene Buttons, Inputs, Cards bauen
-- IMMER semantische Farben: bg-primary, text-danger (NICHT bg-blue-600)
-- Lies src/lib/design/DESIGN-SYSTEM.md für Details
+- ALWAYS use the components from $lib/design/components/
+- NEVER build your own buttons, inputs, cards
+- ALWAYS semantic colours: bg-primary, text-danger (NOT bg-blue-600)
+- Read src/lib/design/DESIGN-SYSTEM.md for details
 
 ## Testing — Hard Rules
 
-- E2E Tests: Playwright gegen laufende App
-- Unit Tests: echte Objekte, Mocks NUR für externe APIs
-- NIEMALS Tests editieren um sie grün zu machen
-- Tests co-located: tests/e2e/ für E2E, \*.test.ts neben Source für Unit
+- E2E tests: Playwright against the running app
+- Unit tests: real objects, mocks ONLY for external APIs
+- NEVER edit tests to make them pass
+- Tests co-located: tests/e2e/ for E2E, \*.test.ts next to the source for unit tests
 
 ## Code — Hard Rules
 
-- Komponenten unter 200 Zeilen, dann splitten
-- ES Modules, kein CommonJS
-- Feature Branches, nie direkt auf main
-- Nach jeder Änderung: npm run check
-- Forms: Progressive Enhancement mit SvelteKit Form Actions
-- Server-Only Code: Immer in .server.ts oder server/ Verzeichnis[settings.local.json](../rss-content-hub/.claude/settings.local.json)
+- Components under 200 lines, split beyond that
+- ES modules, no CommonJS
+- Feature branches, never directly on main
+- After every change: npm run check
+- Forms: progressive enhancement with SvelteKit form actions
+- Server-only code: always in .server.ts or a server/ directory
 
 ## Agent Loop (GitHub Actions)
 
