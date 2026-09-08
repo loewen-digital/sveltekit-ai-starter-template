@@ -1,0 +1,28 @@
+/*
+ * Project theme: overrides for the element-library token contract.
+ *
+ * `@webtides/element-library/themes/default.css` (imported before this file
+ * in app.css) defines every `--el-*` token; this file sets the ones this
+ * project wants to differ. The tokens are custom properties on :root, so they
+ * reach into every shadow root, and Tailwind's semantic colours in app.css
+ * alias them, so utilities and components share one palette.
+ *
+ * `light-dark()` follows the user's colour scheme; default.css opts the
+ * document into both via `color-scheme: light dark`.
+ */
+:root {
+	/* Interactive & semantic */
+	--el-color-accent: light-dark(#2563eb, #3b82f6);
+	--el-color-danger: light-dark(#dc2626, #ef4444);
+	--el-color-success: light-dark(#16a34a, #22c55e);
+	--el-color-warning: light-dark(#d97706, #f59e0b);
+
+	/* Surfaces & text */
+	--el-color-fg: light-dark(#111827, #f9fafb);
+	--el-color-fg-muted: light-dark(#6b7280, #d1d5db);
+	--el-color-bg: light-dark(#ffffff, #111827);
+	--el-color-bg-muted: light-dark(#f3f4f6, #1f2937);
+	--el-color-border: light-dark(#e5e7eb, #374151);
+
+	--el-font-family: system-ui, -apple-system, sans-serif;
+}
