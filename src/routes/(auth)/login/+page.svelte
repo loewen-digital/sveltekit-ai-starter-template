@@ -11,7 +11,11 @@
 	let error = $derived(form?.error || '');
 </script>
 
-<div class="flex min-h-screen items-center justify-center px-4">
+<svelte:head>
+	<title>Login</title>
+</svelte:head>
+
+<main class="flex min-h-screen items-center justify-center px-4">
 	<div class="w-full max-w-md">
 		<Card>
 			<h1 class="mb-6 text-center text-2xl font-bold text-text-primary">Login</h1>
@@ -42,8 +46,8 @@
 				<a href="/forgot-password" class="text-primary hover:underline">Forgot password?</a>
 			</p>
 			<p class="mt-2 text-center text-sm text-text-secondary">
-				Don't have an account? <a href="/register" class="text-primary hover:underline">Register</a>
+				Don't have an account? <a href="/register" class="text-primary underline">Register</a>
 			</p>
 		</Card>
 	</div>
-</div>
+</main>

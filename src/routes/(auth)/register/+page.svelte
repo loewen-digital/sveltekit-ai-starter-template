@@ -18,7 +18,11 @@
 	let error = $derived(clientError || form?.error || '');
 </script>
 
-<div class="flex min-h-screen items-center justify-center px-4">
+<svelte:head>
+	<title>Create Account</title>
+</svelte:head>
+
+<main class="flex min-h-screen items-center justify-center px-4">
 	<div class="w-full max-w-md">
 		<Card>
 			<h1 class="mb-6 text-center text-2xl font-bold text-text-primary">Create Account</h1>
@@ -67,8 +71,8 @@
 			</form>
 
 			<p class="mt-4 text-center text-sm text-text-secondary">
-				Already have an account? <a href="/login" class="text-primary hover:underline">Login</a>
+				Already have an account? <a href="/login" class="text-primary underline">Login</a>
 			</p>
 		</Card>
 	</div>
-</div>
+</main>

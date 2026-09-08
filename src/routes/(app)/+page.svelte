@@ -4,6 +4,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<title>Home</title>
+</svelte:head>
+
 <Card>
 	<h1 class="text-2xl font-bold text-text-primary">Welcome, {data.user.email}</h1>
 	<p class="mt-2 text-text-secondary">You are logged in.</p>

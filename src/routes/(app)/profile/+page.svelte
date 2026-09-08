@@ -5,6 +5,10 @@
 	let { data, form } = $props();
 </script>
 
+<svelte:head>
+	<title>Settings</title>
+</svelte:head>
+
 <div class="mx-auto max-w-lg">
 	<h1 class="mb-6 text-2xl font-bold text-text-primary">Settings</h1>
 

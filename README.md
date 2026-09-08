@@ -30,6 +30,7 @@ npm run dev
 - **Framework:** SvelteKit v2, Svelte 5 (Runes)
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS v4
+- **Design system:** @webtides/element-library Web Components, server-rendered via @webtides/element-js-ssr-renderer
 - **Auth:** Lucia Auth v3 + Drizzle Adapter
 - **Database:** Drizzle ORM + SQLite (local) / D1 (Cloudflare)
 - **Testing:** Vitest (Unit) + Playwright (E2E)
@@ -41,7 +42,7 @@ npm run dev
 src/
 ├── lib/
 │   ├── design/           # Design system
-│   │   ├── components/   # Button, Input, Card, Alert, Modal, Spinner, EmptyState
+│   │   ├── components/   # Wrappers around element-library (Button, Input, Alert, Toast, Modal) + Card, Spinner, EmptyState
 │   │   └── DESIGN-SYSTEM.md
 │   ├── features/         # Feature modules
 │   │   └── auth/         # Authentication (Lucia + Drizzle)

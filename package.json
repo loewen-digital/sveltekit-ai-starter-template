@@ -16,6 +16,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.13.0",
 		"@playwright/test": "^1.49.0",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.0.0",

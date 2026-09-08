@@ -7,6 +7,10 @@
 	let loading = $state(false);
 </script>
 
+<svelte:head>
+	<title>Email Verification</title>
+</svelte:head>
+
 <div class="mx-auto max-w-lg">
 	<Card>
 		<h1 class="mb-4 text-2xl font-bold text-text-primary">Email Verification</h1>

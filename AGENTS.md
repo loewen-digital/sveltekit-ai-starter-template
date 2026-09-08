@@ -46,9 +46,10 @@ Single instruction file for every coding agent working in this repository. Codex
 
 ## Design System — Hard Rules
 
-- ALWAYS use the components from $lib/design/components/
-- NEVER build your own buttons, inputs, cards
-- ALWAYS semantic colours: bg-primary, text-danger (NOT bg-blue-600)
+- The design system is `@webtides/element-library` (Web Components), server-rendered through `@webtides/element-js-ssr-renderer` in `src/hooks.server.ts` and upgraded on the client by `src/lib/design/autoload.ts`
+- ALWAYS use the wrappers in $lib/design/components/ where one exists (Button, Input, Alert, Toast, Modal); use any other element-library component directly as `<el-…>` and type it in `src/lib/design/elements.d.ts`
+- NEVER build your own buttons, inputs, dialogs or notifications. Missing in element-library: file an issue there, workaround marked `// UPSTREAM: <issue-url>`
+- ALWAYS semantic colours: bg-primary, text-danger (NOT bg-blue-600). They alias the `--el-*` tokens; new tokens go into `src/lib/design/theme.css`
 - Read src/lib/design/DESIGN-SYSTEM.md for details
 
 ## Testing — Hard Rules
