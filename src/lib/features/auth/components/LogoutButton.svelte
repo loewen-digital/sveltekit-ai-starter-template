@@ -4,5 +4,5 @@
 </script>
 
 <form method="POST" action="/logout" use:enhance>
-	<Button type="submit" variant="ghost" size="sm">Logout</Button>
+	<Button type="submit" variant="text" size="small">Logout</Button>
 </form>

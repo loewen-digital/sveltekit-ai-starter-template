@@ -4,6 +4,17 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// UPSTREAM: https://github.com/webtides/element-library/issues/86
+			// Until <el-button> has upgraded, a click on its server-rendered submit
+			// button is lost: the native button sits in the shadow root and owns no
+			// form. Forward such clicks to the form; the element takes over after.
+			document.addEventListener('click', (event) => {
+				if (customElements.get('el-button')) return;
+				const host = event.composedPath().find((node) => node.localName === 'el-button');
+				if (host && host.getAttribute('type') === 'submit') host.closest('form')?.requestSubmit();
+			});
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

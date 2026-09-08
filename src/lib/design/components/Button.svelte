@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Spinner from './Spinner.svelte';
 
-	type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
-	type Size = 'sm' | 'md' | 'lg';
+	type Variant = 'default' | 'primary' | 'success' | 'neutral' | 'warning' | 'danger' | 'text';
+	type Size = 'small' | 'medium' | 'large';
 
 	let {
-		variant = 'primary',
-		size = 'md',
+		variant = 'default',
+		size = 'medium',
 		disabled = false,
 		loading = false,
 		type = 'button',
@@ -19,39 +18,28 @@
 		disabled?: boolean;
 		loading?: boolean;
 		type?: 'button' | 'submit' | 'reset';
-		onclick?: (e: MouseEvent) => void;
+		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
 	} = $props();
-
-	const variantClasses: Record<Variant, string> = {
-		primary: 'bg-primary text-primary-text hover:bg-primary-hover focus-visible:ring-primary/50',
-		secondary:
-			'bg-surface-secondary text-text-primary border border-border hover:bg-surface-hover focus-visible:ring-primary/50',
-		danger: 'bg-danger text-white hover:bg-danger-hover focus-visible:ring-danger/50',
-		ghost: 'text-text-primary hover:bg-surface-secondary focus-visible:ring-primary/50'
-	};
-
-	const sizeClasses: Record<Size, string> = {
-		sm: 'px-3 py-1.5 text-sm',
-		md: 'px-4 py-2 text-sm',
-		lg: 'px-6 py-3 text-base'
-	};
-
-	let isDisabled = $derived(disabled || loading);
 </script>
 
-<button
-	{type}
-	class="inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 {variantClasses[
-		variant
-	]} {sizeClasses[size]}"
-	disabled={isDisabled}
-	{onclick}
->
-	{#if loading}
-		<Spinner size="sm" />
-	{/if}
-	{#if children}
-		{@render children()}
-	{/if}
-</button>
+<!-- The element is the interactive control (a native <button> in its shadow root);
+     Svelte only sees a custom tag with a click handler. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<el-button {variant} {size} {type} {disabled} {loading} {onclick}>
+	{@render children?.()}
+</el-button>
+
+{#if type === 'submit'}
+	<!--
+		UPSTREAM: https://github.com/webtides/element-library/issues/86
+		el-button keeps its native <button> in the shadow root, where it is no
+		submit button of the form: Enter never submits, and without scripting a
+		click does nothing. This light-DOM button gives the form its submit
+		button. theme.css hides it while scripting is enabled and swaps it in
+		for the element without; app.html bridges clicks until the element has
+		upgraded.
+	-->
+	<button type="submit" class="el-button-submit" {disabled}>{@render children?.()}</button>
+{/if}

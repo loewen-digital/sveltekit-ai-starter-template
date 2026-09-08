@@ -26,3 +26,38 @@
 
 	--el-font-family: system-ui, -apple-system, sans-serif;
 }
+
+/*
+ * UPSTREAM: https://github.com/webtides/element-library/issues/86
+ * Button.svelte renders a native submit button next to <el-button type="submit">
+ * so the form has a submit button in light DOM (Enter submits, and it is the
+ * visible control when scripting is off). Hidden by default: browsers without
+ * the `scripting` media feature keep the element and lose only the no-JS case.
+ */
+.el-button-submit {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-height: var(--el-control-height);
+	padding: var(--el-space-2) var(--el-space-4);
+	border: var(--el-border-width) solid transparent;
+	border-radius: var(--el-radius-md);
+	background: var(--el-color-accent);
+	color: var(--el-color-bg);
+	font-family: var(--el-font-family);
+	font-size: var(--el-font-size-md);
+	font-weight: 600;
+	line-height: var(--el-line-height);
+	cursor: pointer;
+}
+
+@media (scripting: none) {
+	el-button[type='submit'] {
+		display: none;
+	}
+
+	.el-button-submit {
+		display: inline-flex;
+	}
+}
