@@ -1,6 +1,7 @@
 {
 	"name": "sveltekit-starter",
 	"version": "0.0.1",
+	"engines": { "node": "24" },
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
