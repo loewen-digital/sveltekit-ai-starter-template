@@ -47,8 +47,9 @@ Single instruction file for every coding agent working in this repository. Codex
 ## Design System — Hard Rules
 
 - The design system is `@webtides/element-library` (Web Components), server-rendered through `@webtides/element-js-ssr-renderer` in `src/hooks.server.ts` and upgraded on the client by `src/lib/design/autoload.ts`
-- ALWAYS use the wrappers in $lib/design/components/ where one exists (Button, Input, Alert, Toast, Modal); use any other element-library component directly as `<el-…>` and type it in `src/lib/design/elements.d.ts`
+- ALWAYS use the elements directly as `<el-…>` and type each tag in `src/lib/design/elements.d.ts`. No Svelte wrappers around them; `SubmitButton` is the one exception (upstream workaround)
 - NEVER build your own buttons, inputs, dialogs or notifications. Missing in element-library: file an issue there, workaround marked `// UPSTREAM: <issue-url>`
+- Forms: fields post natively, no `bind:value`; client validation reads `formData` in `use:enhance`
 - ALWAYS semantic colours: bg-primary, text-danger (NOT bg-blue-600). They alias the `--el-*` tokens; new tokens go into `src/lib/design/theme.css`
 - Read src/lib/design/DESIGN-SYSTEM.md for details
 

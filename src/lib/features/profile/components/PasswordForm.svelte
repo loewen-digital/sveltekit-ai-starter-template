@@ -1,23 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 	import { validatePassword, validatePasswordConfirm } from '$lib/shared/validation.js';
 
 	let { form }: { form: Record<string, unknown> | null } = $props();
 
-	let currentPassword = $state('');
-	let newPassword = $state('');
-	let newPasswordConfirm = $state('');
 	let clientError = $state('');
 	let loading = $state(false);
-
-	function validate(): string {
-		return (
-			validatePassword(newPassword) ??
-			validatePasswordConfirm(newPassword, newPasswordConfirm) ??
-			''
-		);
-	}
 
 	let error = $derived(clientError || (form?.passwordError as string) || '');
 	let success = $derived((form?.passwordSuccess as string) || '');
@@ -28,20 +17,24 @@
 
 	{#if error}
 		<div class="mb-4">
-			<Alert variant="danger">{error}</Alert>
+			<el-notification variant="danger" open role="alert">{error}</el-notification>
 		</div>
 	{:else if success}
 		<!-- The server's message, so the result also shows without JavaScript. -->
 		<div class="mb-4">
-			<Alert variant="success">{success}</Alert>
+			<el-notification variant="success" open role="status">{success}</el-notification>
 		</div>
 	{/if}
 
 	<form
 		method="POST"
 		action="?/updatePassword"
-		use:enhance={({ cancel }) => {
-			const err = validate();
+		use:enhance={({ formData, cancel }) => {
+			const newPassword = String(formData.get('newPassword') ?? '');
+			const err =
+				validatePassword(newPassword) ??
+				validatePasswordConfirm(newPassword, String(formData.get('newPasswordConfirm') ?? '')) ??
+				'';
 			if (err) {
 				clientError = err;
 				cancel();
@@ -49,40 +42,22 @@
 			}
 			clientError = '';
 			loading = true;
-			return async ({ result, update }) => {
+			return async ({ update }) => {
 				loading = false;
-				if (result.type === 'success') {
-					currentPassword = '';
-					newPassword = '';
-					newPasswordConfirm = '';
-				}
 				await update();
 			};
 		}}
 		class="flex flex-col gap-4"
 	>
-		<Input
-			type="password"
-			label="Current Password"
-			name="currentPassword"
-			bind:value={currentPassword}
-			required
-		/>
-		<Input
-			type="password"
-			label="New Password"
+		<el-password-field name="currentPassword" label="Current Password" required></el-password-field>
+		<el-password-field
 			name="newPassword"
+			label="New Password"
 			placeholder="Min. 8 characters"
-			bind:value={newPassword}
 			required
-		/>
-		<Input
-			type="password"
-			label="Confirm New Password"
-			name="newPasswordConfirm"
-			bind:value={newPasswordConfirm}
-			required
-		/>
-		<Button type="submit" variant="primary" {loading}>Update Password</Button>
+		></el-password-field>
+		<el-password-field name="newPasswordConfirm" label="Confirm New Password" required
+		></el-password-field>
+		<SubmitButton variant="primary" {loading}>Update Password</SubmitButton>
 	</form>
 </Card>

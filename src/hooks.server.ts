@@ -1,7 +1,7 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { authHandle } from '$lib/features/auth/server/middleware.js';
-import { elementCatalog } from '$lib/design/catalog.js';
+import { elementCatalog, elementProperties } from '$lib/design/catalog.js';
 
 let elementHandle: Handle;
 
@@ -18,7 +18,7 @@ let elementHandle: Handle;
 export const init: ServerInit = async () => {
 	await import('@webtides/element-js-ssr-renderer/dom-shim');
 	const { elementSSR } = await import('@webtides/element-js-ssr-renderer/sveltekit');
-	elementHandle = elementSSR({ resolve: elementCatalog });
+	elementHandle = elementSSR({ resolve: elementCatalog, properties: elementProperties });
 };
 
 // Rate limiting lives in the auth form actions (see rate-limit-guard.ts), not

@@ -15,6 +15,11 @@ declare module '@webtides/element-js-ssr-renderer/sveltekit' {
 		onError?: (tag: string, error: Error) => void;
 		serializeState?: boolean;
 		transforms?: { pre?: PageTransform | PageTransform[]; post?: PageTransform | PageTransform[] };
+		properties?: (input: {
+			tag: string;
+			node: { hasAttribute(name: string): boolean; getAttribute(name: string): string | undefined };
+			context: unknown;
+		}) => object | null | undefined | Promise<object | null | undefined>;
 	}): Handle;
 }
 

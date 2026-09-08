@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button } from '$lib/design/components';
+	import { SubmitButton } from '$lib/design/components';
 </script>
 
 <form method="POST" action="/logout" use:enhance>
-	<Button type="submit" variant="text" size="small">Logout</Button>
+	<SubmitButton variant="text" size="small">Logout</SubmitButton>
 </form>

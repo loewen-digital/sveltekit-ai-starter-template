@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 
 	let { data, form } = $props();
 
-	let password = $state('');
-	let passwordConfirm = $state('');
 	let loading = $state(false);
 
 	let error = $derived(form?.error || '');
@@ -25,9 +23,9 @@
 
 			{#if form?.success}
 				<div class="mb-4">
-					<Alert variant="success">
+					<el-notification variant="success" open role="status">
 						Password reset successfully. You can now log in with your new password.
-					</Alert>
+					</el-notification>
 				</div>
 				<p class="text-center">
 					<a href="/login" class="text-primary hover:underline">Go to Login</a>
@@ -35,7 +33,7 @@
 			{:else}
 				{#if error}
 					<div class="mb-4">
-						<Alert variant="danger">{error}</Alert>
+						<el-notification variant="danger" open role="alert">{error}</el-notification>
 					</div>
 				{/if}
 
@@ -51,22 +49,15 @@
 					class="flex flex-col gap-4"
 				>
 					<input type="hidden" name="token" value={token} />
-					<Input
-						type="password"
-						label="New Password"
+					<el-password-field
 						name="password"
+						label="New Password"
 						placeholder="Min. 8 characters"
-						bind:value={password}
 						required
-					/>
-					<Input
-						type="password"
-						label="Confirm Password"
-						name="passwordConfirm"
-						bind:value={passwordConfirm}
-						required
-					/>
-					<Button type="submit" variant="primary" {loading}>Reset Password</Button>
+					></el-password-field>
+					<el-password-field name="passwordConfirm" label="Confirm Password" required
+					></el-password-field>
+					<SubmitButton variant="primary" {loading}>Reset Password</SubmitButton>
 				</form>
 
 				<p class="mt-4 text-center text-sm text-text-secondary">

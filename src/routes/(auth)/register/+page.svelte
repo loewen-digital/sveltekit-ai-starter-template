@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 	import { validateRegistration } from '$lib/shared/validation.js';
 
 	let { form } = $props();
 
-	let email = $state('');
-	let password = $state('');
-	let passwordConfirm = $state('');
 	let clientError = $state('');
 	let loading = $state(false);
-
-	function validate(): string {
-		return validateRegistration({ email, password, passwordConfirm }) ?? '';
-	}
 
 	let error = $derived(clientError || form?.error || '');
 </script>
@@ -29,14 +22,18 @@
 
 			{#if error}
 				<div class="mb-4">
-					<Alert variant="danger">{error}</Alert>
+					<el-notification variant="danger" open role="alert">{error}</el-notification>
 				</div>
 			{/if}
 
 			<form
 				method="POST"
-				use:enhance={({ cancel }) => {
-					const err = validate();
+				use:enhance={({ formData, cancel }) => {
+					const err = validateRegistration({
+						email: String(formData.get('email') ?? ''),
+						password: String(formData.get('password') ?? ''),
+						passwordConfirm: String(formData.get('passwordConfirm') ?? '')
+					});
 					if (err) {
 						clientError = err;
 						cancel();
@@ -51,23 +48,12 @@
 				}}
 				class="flex flex-col gap-4"
 			>
-				<Input type="email" label="Email" name="email" bind:value={email} required />
-				<Input
-					type="password"
-					label="Password"
-					name="password"
-					placeholder="Min. 8 characters"
-					bind:value={password}
-					required
-				/>
-				<Input
-					type="password"
-					label="Confirm Password"
-					name="passwordConfirm"
-					bind:value={passwordConfirm}
-					required
-				/>
-				<Button type="submit" variant="primary" {loading}>Register</Button>
+				<el-input-field type="email" name="email" label="Email" required></el-input-field>
+				<el-password-field name="password" label="Password" placeholder="Min. 8 characters" required
+				></el-password-field>
+				<el-password-field name="passwordConfirm" label="Confirm Password" required
+				></el-password-field>
+				<SubmitButton variant="primary" {loading}>Register</SubmitButton>
 			</form>
 
 			<p class="mt-4 text-center text-sm text-text-secondary">

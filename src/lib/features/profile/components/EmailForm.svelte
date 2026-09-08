@@ -1,25 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 	import { validateEmail } from '$lib/shared/validation.js';
 
 	let { currentEmail, form }: { currentEmail: string; form: Record<string, unknown> | null } =
 		$props();
 
-	// Seeded from the prop rather than synced via $effect: effects do not run
-	// during SSR, so an effect would leave the field empty in the server-rendered
-	// HTML and then overwrite whatever the user typed once hydration lands.
-	// Capturing the initial value is intentional — the field belongs to the user
-	// from first paint onwards, and a rejected submit must keep what they typed.
-	// svelte-ignore state_referenced_locally
-	let email = $state(currentEmail);
-	let password = $state('');
 	let clientError = $state('');
 	let loading = $state(false);
-
-	function validate(): string {
-		return validateEmail(email) ?? '';
-	}
 
 	let error = $derived(clientError || (form?.emailError as string) || '');
 	let success = $derived((form?.emailSuccess as string) || '');
@@ -30,20 +18,20 @@
 
 	{#if error}
 		<div class="mb-4">
-			<Alert variant="danger">{error}</Alert>
+			<el-notification variant="danger" open role="alert">{error}</el-notification>
 		</div>
 	{:else if success}
 		<!-- The server's message, so the result also shows without JavaScript. -->
 		<div class="mb-4">
-			<Alert variant="success">{success}</Alert>
+			<el-notification variant="success" open role="status">{success}</el-notification>
 		</div>
 	{/if}
 
 	<form
 		method="POST"
 		action="?/updateEmail"
-		use:enhance={({ cancel }) => {
-			const err = validate();
+		use:enhance={({ formData, cancel }) => {
+			const err = validateEmail(String(formData.get('email') ?? '')) ?? '';
 			if (err) {
 				clientError = err;
 				cancel();
@@ -51,24 +39,16 @@
 			}
 			clientError = '';
 			loading = true;
-			return async ({ result, update }) => {
+			return async ({ update }) => {
 				loading = false;
-				if (result.type === 'success') {
-					password = '';
-				}
 				await update();
 			};
 		}}
 		class="flex flex-col gap-4"
 	>
-		<Input type="email" label="New Email" name="email" bind:value={email} required />
-		<Input
-			type="password"
-			label="Current Password"
-			name="password"
-			bind:value={password}
-			required
-		/>
-		<Button type="submit" variant="primary" {loading}>Update Email</Button>
+		<el-input-field type="email" name="email" label="New Email" value={currentEmail} required
+		></el-input-field>
+		<el-password-field name="password" label="Current Password" required></el-password-field>
+		<SubmitButton variant="primary" {loading}>Update Email</SubmitButton>
 	</form>
 </Card>

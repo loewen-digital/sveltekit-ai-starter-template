@@ -41,3 +41,29 @@ export const elementCatalog: Record<string, ElementConfig> = Object.fromEntries(
 		{ component, adoptGlobalStyles: false, styles: ssrStyles[tag] }
 	])
 );
+
+/**
+ * UPSTREAM: https://github.com/webtides/element-js/issues/167
+ * element-js writes `null` attribute values as the text "null" in server
+ * output, and the form fields default `value` to `null`, so a field without a
+ * `value` attribute renders `<input value="null">`. Seed an empty string for
+ * those fields; an authored `value` attribute still wins (attributes merge
+ * over provider properties).
+ */
+const NULL_VALUE_FIELDS = new Set([
+	'el-input-field',
+	'el-password-field',
+	'el-select-field',
+	'el-amount-field'
+]);
+
+export function elementProperties({
+	tag,
+	node
+}: {
+	tag: string;
+	node: { hasAttribute(name: string): boolean };
+}) {
+	if (NULL_VALUE_FIELDS.has(tag) && !node.hasAttribute('value')) return { value: '' };
+	return null;
+}

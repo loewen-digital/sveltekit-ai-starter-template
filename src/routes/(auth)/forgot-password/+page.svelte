@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Input, Alert, Card } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 
 	let { form } = $props();
 
-	let email = $state('');
 	let loading = $state(false);
 
 	let error = $derived(form?.error || '');
@@ -24,13 +23,13 @@
 
 			{#if error}
 				<div class="mb-4">
-					<Alert variant="danger">{error}</Alert>
+					<el-notification variant="danger" open role="alert">{error}</el-notification>
 				</div>
 			{:else if form?.success}
 				<div class="mb-4">
-					<Alert variant="success">
+					<el-notification variant="success" open role="status">
 						If an account with that email exists, we've sent a password reset link.
-					</Alert>
+					</el-notification>
 				</div>
 			{/if}
 
@@ -45,8 +44,8 @@
 				}}
 				class="flex flex-col gap-4"
 			>
-				<Input type="email" label="Email" name="email" bind:value={email} required />
-				<Button type="submit" variant="primary" {loading}>Send Reset Link</Button>
+				<el-input-field type="email" name="email" label="Email" required></el-input-field>
+				<SubmitButton variant="primary" {loading}>Send Reset Link</SubmitButton>
 			</form>
 
 			<p class="mt-4 text-center text-sm text-text-secondary">

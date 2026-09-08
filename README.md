@@ -42,7 +42,7 @@ npm run dev
 src/
 ├── lib/
 │   ├── design/           # Design system
-│   │   ├── components/   # Wrappers around element-library (Button, Input, Alert, Toast, Modal) + Card, Spinner, EmptyState
+│   │   ├── components/   # SubmitButton (upstream workaround), Card, Spinner, EmptyState; everything else is <el-…> directly
 │   │   └── DESIGN-SYSTEM.md
 │   ├── features/         # Feature modules
 │   │   └── auth/         # Authentication (Lucia + Drizzle)
