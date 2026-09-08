@@ -1,4 +1,7 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import NotificationIcon from './NotificationIcon.svelte';
+
 	type Variant = 'info' | 'success' | 'warning' | 'danger';
 
 	let {
@@ -8,44 +11,17 @@
 	}: {
 		variant?: Variant;
 		dismissible?: boolean;
-		children?: import('svelte').Snippet;
+		children?: Snippet;
 	} = $props();
 
-	let visible = $state(true);
-
-	const variantClasses: Record<Variant, string> = {
-		info: 'bg-primary/10 border-primary/30 text-primary',
-		success: 'bg-success/10 border-success/30 text-success',
-		warning: 'bg-warning/10 border-warning/30 text-warning',
-		danger: 'bg-danger/10 border-danger/30 text-danger'
-	};
-
-	const icons: Record<Variant, string> = {
-		info: 'ⓘ',
-		success: '✓',
-		warning: '⚠',
-		danger: '✕'
-	};
+	// element-library calls the informational variant "primary"; the rest match.
+	const elementVariant = $derived(variant === 'info' ? 'primary' : variant);
+	// The element sets these itself once it upgrades; setting them server-side
+	// makes the message a live region before that, and without JavaScript.
+	const role = $derived(variant === 'danger' || variant === 'warning' ? 'alert' : 'status');
 </script>
 
-{#if visible}
-	<div class="flex items-start gap-3 rounded-md border p-4 {variantClasses[variant]}" role="alert">
-		<span class="text-lg leading-none" aria-hidden="true">{icons[variant]}</span>
-
-		<div class="flex-1 text-sm">
-			{#if children}
-				{@render children()}
-			{/if}
-		</div>
-
-		{#if dismissible}
-			<button
-				onclick={() => (visible = false)}
-				class="text-current opacity-60 transition-opacity hover:opacity-100"
-				aria-label="Dismiss"
-			>
-				✕
-			</button>
-		{/if}
-	</div>
-{/if}
+<el-notification variant={elementVariant} open closable={dismissible} {role}>
+	<span slot="icon" class="inline-flex"><NotificationIcon {variant} /></span>
+	{@render children?.()}
+</el-notification>

@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import { Button, Input, Alert, Card } from '$lib/design/components';
 	import { validatePassword, validatePasswordConfirm } from '$lib/shared/validation.js';
-	import { addToast } from '$lib/features/toast/toast.svelte.js';
 
 	let { form }: { form: Record<string, unknown> | null } = $props();
 
@@ -21,6 +20,7 @@
 	}
 
 	let error = $derived(clientError || (form?.passwordError as string) || '');
+	let success = $derived((form?.passwordSuccess as string) || '');
 </script>
 
 <Card>
@@ -29,6 +29,11 @@
 	{#if error}
 		<div class="mb-4">
 			<Alert variant="danger">{error}</Alert>
+		</div>
+	{:else if success}
+		<!-- The server's message, so the result also shows without JavaScript. -->
+		<div class="mb-4">
+			<Alert variant="success">{success}</Alert>
 		</div>
 	{/if}
 
@@ -50,7 +55,6 @@
 					currentPassword = '';
 					newPassword = '';
 					newPasswordConfirm = '';
-					addToast({ message: 'Password updated successfully', variant: 'success' });
 				}
 				await update();
 			};

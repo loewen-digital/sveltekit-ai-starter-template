@@ -31,6 +31,16 @@ declare module 'svelte/elements' {
 			'password-toggle'?: Toggle;
 			'password-visible'?: Toggle;
 		};
+		'el-notification': HTMLAttributes<HTMLElement> & {
+			open?: Toggle;
+			variant?: 'default' | 'primary' | 'success' | 'neutral' | 'warning' | 'danger';
+			closable?: Toggle;
+			duration?: number;
+			'onnotification-show'?: (event: CustomEvent) => void;
+			'onnotification-after-show'?: (event: CustomEvent) => void;
+			'onnotification-hide'?: (event: CustomEvent) => void;
+			'onnotification-after-hide'?: (event: CustomEvent) => void;
+		};
 		'el-dialog': HTMLAttributes<HTMLElement> & {
 			open?: Toggle;
 			label?: string;

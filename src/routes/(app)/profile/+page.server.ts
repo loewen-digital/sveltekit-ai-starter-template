@@ -47,11 +47,13 @@ export const actions: Actions = {
 		if (!delivered) {
 			return {
 				emailSuccess:
-					'Email updated, but the verification message could not be sent. You can request a new one from the verification page.'
+					'Email updated successfully, but the verification message could not be sent. You can request a new one from the verification page.'
 			};
 		}
 
-		return { emailSuccess: 'Email updated. Please check your inbox to verify your new email.' };
+		return {
+			emailSuccess: 'Email updated successfully. Please check your inbox to verify your new email.'
+		};
 	},
 
 	updatePassword: async ({ request, locals, cookies }) => {

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import NotificationIcon from './NotificationIcon.svelte';
+
 	type Variant = 'info' | 'success' | 'warning' | 'danger';
 
 	let {
@@ -11,36 +13,13 @@
 		onDismiss: () => void;
 	} = $props();
 
-	const variantClasses: Record<Variant, string> = {
-		info: 'bg-primary/10 border-primary/30 text-primary',
-		success: 'bg-success/10 border-success/30 text-success',
-		warning: 'bg-warning/10 border-warning/30 text-warning',
-		danger: 'bg-danger/10 border-danger/30 text-danger'
-	};
-
-	const icons: Record<Variant, string> = {
-		info: 'ⓘ',
-		success: '✓',
-		warning: '⚠',
-		danger: '✕'
-	};
+	// element-library calls the informational variant "primary"; the rest match.
+	const elementVariant = $derived(variant === 'info' ? 'primary' : variant);
 </script>
 
-<div
-	class="flex items-start gap-3 rounded-md border p-4 shadow-lg {variantClasses[variant]}"
-	role="alert"
->
-	<span class="text-lg leading-none" aria-hidden="true">{icons[variant]}</span>
-
-	<div class="flex-1 text-sm">
-		{message}
-	</div>
-
-	<button
-		onclick={onDismiss}
-		class="text-current opacity-60 transition-opacity hover:opacity-100"
-		aria-label="Dismiss"
-	>
-		✕
-	</button>
-</div>
+<!-- Auto-dismiss stays with the toast store; the close button hides the element,
+     and `notification-hide` hands that back to the store. -->
+<el-notification variant={elementVariant} open closable onnotification-hide={onDismiss}>
+	<span slot="icon" class="inline-flex"><NotificationIcon {variant} /></span>
+	{message}
+</el-notification>

@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import { Button, Input, Alert, Card } from '$lib/design/components';
 	import { validateEmail } from '$lib/shared/validation.js';
-	import { addToast } from '$lib/features/toast/toast.svelte.js';
 
 	let { currentEmail, form }: { currentEmail: string; form: Record<string, unknown> | null } =
 		$props();
@@ -23,6 +22,7 @@
 	}
 
 	let error = $derived(clientError || (form?.emailError as string) || '');
+	let success = $derived((form?.emailSuccess as string) || '');
 </script>
 
 <Card>
@@ -31,6 +31,11 @@
 	{#if error}
 		<div class="mb-4">
 			<Alert variant="danger">{error}</Alert>
+		</div>
+	{:else if success}
+		<!-- The server's message, so the result also shows without JavaScript. -->
+		<div class="mb-4">
+			<Alert variant="success">{success}</Alert>
 		</div>
 	{/if}
 
@@ -50,7 +55,6 @@
 				loading = false;
 				if (result.type === 'success') {
 					password = '';
-					addToast({ message: 'Email updated successfully', variant: 'success' });
 				}
 				await update();
 			};

@@ -61,3 +61,8 @@
 		display: inline-flex;
 	}
 }
+
+/* Inline notifications fill their container; the library caps the panel at 28rem for toasts. */
+main el-notification::part(panel) {
+	max-width: none;
+}
