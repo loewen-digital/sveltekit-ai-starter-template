@@ -7,8 +7,30 @@ import type { HTMLAttributes } from 'svelte/elements';
 
 type Toggle = boolean | 'true' | 'false';
 
+type FieldAttributes = HTMLAttributes<HTMLElement> & {
+	name: string;
+	label?: string;
+	value?: string | null;
+	placeholder?: string;
+	required?: Toggle;
+	disabled?: Toggle;
+	'label-screen-reader-only'?: Toggle;
+	'help-message'?: string;
+	'error-message'?: string;
+	valid?: Toggle;
+	touched?: Toggle;
+	pattern?: string;
+};
+
 declare module 'svelte/elements' {
 	export interface SvelteHTMLElements {
+		'el-input-field': FieldAttributes & {
+			type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+		};
+		'el-password-field': FieldAttributes & {
+			'password-toggle'?: Toggle;
+			'password-visible'?: Toggle;
+		};
 		'el-button': HTMLAttributes<HTMLElement> & {
 			variant?: 'default' | 'primary' | 'success' | 'neutral' | 'warning' | 'danger' | 'text';
 			size?: 'small' | 'medium' | 'large';

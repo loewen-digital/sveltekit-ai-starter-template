@@ -8,7 +8,7 @@
 		placeholder = '',
 		required = false,
 		disabled = false,
-		name = '',
+		name,
 		value = $bindable('')
 	}: {
 		type?: InputType;
@@ -17,39 +17,66 @@
 		placeholder?: string;
 		required?: boolean;
 		disabled?: boolean;
-		name?: string;
+		/** Also names the native input and links the label to it. */
+		name: string;
 		value?: string;
 	} = $props();
 
-	let inputId = $derived(name || label.toLowerCase().replace(/\s+/g, '-'));
+	let host: HTMLElement | undefined = $state();
+
+	// The element renders its native <input> in light DOM and tracks `value`
+	// itself, so the wrapper only has to bridge Svelte's binding: read every
+	// keystroke from the native input, and write programmatic changes (a reset
+	// after a successful submit) straight into it, because the element only
+	// re-renders the `value` attribute, which a dirty input ignores.
+	function oninput(event: Event) {
+		const input = event.target;
+		if (input instanceof HTMLInputElement) value = input.value;
+	}
+
+	// On the first run the native input wins: whatever was typed or autofilled
+	// before hydration must not be wiped by the empty initial state (that is
+	// what Svelte's own bind:value does on hydration, too).
+	let adopted = false;
+	$effect(() => {
+		const input = host?.querySelector('input');
+		if (!input) return;
+		if (!adopted) {
+			adopted = true;
+			if (input.value !== value) {
+				value = input.value;
+				return;
+			}
+		}
+		if (input.value !== value) input.value = value;
+	});
 </script>
 
-<div class="flex flex-col gap-1.5">
-	{#if label}
-		<label for={inputId} class="text-sm font-medium text-text-primary">
-			{label}
-			{#if required}
-				<span class="text-danger" aria-hidden="true">*</span>
-			{/if}
-		</label>
-	{/if}
-
-	<input
-		id={inputId}
-		{type}
+{#if type === 'password'}
+	<el-password-field
+		bind:this={host}
 		{name}
+		{label}
 		{placeholder}
 		{required}
 		{disabled}
-		bind:value
-		class="rounded-md border px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50
-			{error
-			? 'border-danger text-text-primary focus:ring-danger/50'
-			: 'border-border text-text-primary focus:ring-primary/50'}
-			bg-surface"
-	/>
-
-	{#if error}
-		<p class="text-sm text-danger">{error}</p>
-	{/if}
-</div>
+		{value}
+		error-message={error || undefined}
+		valid={error ? false : undefined}
+		{oninput}
+	></el-password-field>
+{:else}
+	<el-input-field
+		bind:this={host}
+		{type}
+		{name}
+		{label}
+		{placeholder}
+		{required}
+		{disabled}
+		{value}
+		error-message={error || undefined}
+		valid={error ? false : undefined}
+		{oninput}
+	></el-input-field>
+{/if}
