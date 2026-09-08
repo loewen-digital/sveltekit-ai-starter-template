@@ -16,7 +16,7 @@
 <main class="flex min-h-screen items-center justify-center px-4">
 	<div class="w-full max-w-md">
 		<Card>
-			<h1 class="mb-6 text-center text-2xl font-bold text-text-primary">Login</h1>
+			<h1 class="mb-6 text-center text-2xl font-bold text-fg">Login</h1>
 
 			{#if error}
 				<div class="mb-4">
@@ -40,11 +40,11 @@
 				<SubmitButton variant="primary" {loading}>Login</SubmitButton>
 			</form>
 
-			<p class="mt-4 text-center text-sm text-text-secondary">
-				<a href="/forgot-password" class="text-primary hover:underline">Forgot password?</a>
+			<p class="mt-4 text-center text-sm text-fg-muted">
+				<a href="/forgot-password" class="text-accent hover:underline">Forgot password?</a>
 			</p>
-			<p class="mt-2 text-center text-sm text-text-secondary">
-				Don't have an account? <a href="/register" class="text-primary underline">Register</a>
+			<p class="mt-2 text-center text-sm text-fg-muted">
+				Don't have an account? <a href="/register" class="text-accent underline">Register</a>
 			</p>
 		</Card>
 	</div>

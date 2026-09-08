@@ -11,7 +11,7 @@
 </script>
 
 <svg
-	class="animate-spin text-primary {sizeClasses[size]}"
+	class="animate-spin text-accent {sizeClasses[size]}"
 	xmlns="http://www.w3.org/2000/svg"
 	fill="none"
 	viewBox="0 0 24 24"

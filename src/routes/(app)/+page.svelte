@@ -9,6 +9,6 @@
 </svelte:head>
 
 <Card>
-	<h1 class="text-2xl font-bold text-text-primary">Welcome, {data.user.email}</h1>
-	<p class="mt-2 text-text-secondary">You are logged in.</p>
+	<h1 class="text-2xl font-bold text-fg">Welcome, {data.user.email}</h1>
+	<p class="mt-2 text-fg-muted">You are logged in.</p>
 </Card>

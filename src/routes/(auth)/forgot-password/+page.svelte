@@ -16,8 +16,8 @@
 <main class="flex min-h-screen items-center justify-center px-4">
 	<div class="w-full max-w-md">
 		<Card>
-			<h1 class="mb-2 text-center text-2xl font-bold text-text-primary">Forgot Password</h1>
-			<p class="mb-6 text-center text-sm text-text-secondary">
+			<h1 class="mb-2 text-center text-2xl font-bold text-fg">Forgot Password</h1>
+			<p class="mb-6 text-center text-sm text-fg-muted">
 				Enter your email and we'll send you a reset link.
 			</p>
 
@@ -48,8 +48,8 @@
 				<SubmitButton variant="primary" {loading}>Send Reset Link</SubmitButton>
 			</form>
 
-			<p class="mt-4 text-center text-sm text-text-secondary">
-				<a href="/login" class="text-primary hover:underline">Back to Login</a>
+			<p class="mt-4 text-center text-sm text-fg-muted">
+				<a href="/login" class="text-accent hover:underline">Back to Login</a>
 			</p>
 		</Card>
 	</div>

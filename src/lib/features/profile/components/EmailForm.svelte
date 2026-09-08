@@ -14,7 +14,7 @@
 </script>
 
 <Card>
-	<h2 class="mb-4 text-lg font-bold text-text-primary">Change Email</h2>
+	<h2 class="mb-4 text-lg font-bold text-fg">Change Email</h2>
 
 	{#if error}
 		<div class="mb-4">

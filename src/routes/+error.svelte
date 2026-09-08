@@ -4,7 +4,7 @@
 
 <main class="flex min-h-screen items-center justify-center px-4">
 	<div class="text-center">
-		<h1 class="text-6xl font-bold text-text-primary">{$page.status}</h1>
+		<h1 class="text-6xl font-bold text-fg">{$page.status}</h1>
 		<div class="mt-4">
 			<el-notification variant="danger" open role="alert">
 				{$page.error?.message ?? 'Something went wrong'}

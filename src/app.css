@@ -3,32 +3,21 @@
 @import './lib/design/theme.css';
 
 /*
- * Semantic colours for Tailwind utilities (bg-primary, text-danger, …).
- * Where element-library has a token, the utility aliases it, so components
- * and utilities can never drift apart. The rest are project-only tokens.
+ * Tailwind utilities for the element-library tokens, under the same names:
+ * bg-accent, text-fg, text-fg-muted, bg-bg, bg-bg-muted, border-border,
+ * text-danger, … One palette, one vocabulary. Add tokens in theme.css, alias
+ * them here when utilities need them.
  */
 @theme inline {
-	--color-primary: var(--el-color-accent);
+	--color-accent: var(--el-color-accent);
 	--color-danger: var(--el-color-danger);
 	--color-success: var(--el-color-success);
 	--color-warning: var(--el-color-warning);
-
-	--color-text-primary: var(--el-color-fg);
-	--color-text-secondary: var(--el-color-fg-muted);
-
-	--color-surface: var(--el-color-bg);
-	--color-surface-secondary: var(--el-color-bg-muted);
+	--color-fg: var(--el-color-fg);
+	--color-fg-muted: var(--el-color-fg-muted);
+	--color-bg: var(--el-color-bg);
+	--color-bg-muted: var(--el-color-bg-muted);
 	--color-border: var(--el-color-border);
-}
-
-@theme {
-	--color-primary-hover: light-dark(#1d4ed8, #2563eb);
-	--color-primary-text: #ffffff;
-	--color-danger-hover: light-dark(#b91c1c, #dc2626);
-	--color-success-hover: light-dark(#15803d, #16a34a);
-	--color-warning-hover: light-dark(#b45309, #d97706);
-	--color-text-muted: light-dark(#9ca3af, #6b7280);
-	--color-surface-hover: light-dark(#f9fafb, #1f2937);
 }
 
 /* Base styles */

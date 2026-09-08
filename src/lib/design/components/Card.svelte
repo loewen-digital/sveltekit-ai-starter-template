@@ -14,7 +14,7 @@
 	} = $props();
 </script>
 
-<div class="rounded-lg border border-border bg-surface shadow-sm">
+<div class="rounded-lg border border-border bg-bg shadow-sm">
 	{#if header}
 		<div class="border-b border-border px-6 py-4">
 			{@render header()}

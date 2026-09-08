@@ -10,7 +10,7 @@
 </svelte:head>
 
 <div class="mx-auto max-w-lg">
-	<h1 class="mb-6 text-2xl font-bold text-text-primary">Settings</h1>
+	<h1 class="mb-6 text-2xl font-bold text-fg">Settings</h1>
 
 	<div class="flex flex-col gap-6">
 		<EmailForm currentEmail={data.user?.email ?? ''} {form} />

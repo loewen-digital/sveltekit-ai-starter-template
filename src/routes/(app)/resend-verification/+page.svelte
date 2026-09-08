@@ -13,7 +13,7 @@
 
 <div class="mx-auto max-w-lg">
 	<Card>
-		<h1 class="mb-4 text-2xl font-bold text-text-primary">Email Verification</h1>
+		<h1 class="mb-4 text-2xl font-bold text-fg">Email Verification</h1>
 
 		{#if data.user?.emailVerified}
 			<el-notification variant="success" open role="status">
@@ -30,7 +30,7 @@
 					<el-notification variant="danger" open role="alert">{form.error}</el-notification>
 				</div>
 			{/if}
-			<p class="mb-4 text-text-secondary">
+			<p class="mb-4 text-fg-muted">
 				Your email ({data.user?.email}) is not yet verified. Click below to receive a new
 				verification link.
 			</p>

@@ -11,7 +11,7 @@
 </script>
 
 <div class="flex flex-col items-center justify-center py-12 text-center">
-	<p class="text-text-muted">{message}</p>
+	<p class="text-fg-muted">{message}</p>
 
 	{#if actionLabel && onAction}
 		<div class="mt-4">

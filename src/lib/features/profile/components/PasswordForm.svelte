@@ -13,7 +13,7 @@
 </script>
 
 <Card>
-	<h2 class="mb-4 text-lg font-bold text-text-primary">Change Password</h2>
+	<h2 class="mb-4 text-lg font-bold text-fg">Change Password</h2>
 
 	{#if error}
 		<div class="mb-4">

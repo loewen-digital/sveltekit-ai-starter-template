@@ -2,7 +2,7 @@ import catalog from '@webtides/element-library/catalog';
 
 /**
  * One SSR configuration per element-library tag. The renderer reads it on the
- * server, the autoloader (see autoload.ts) on the client.
+ * server, the autoloader (called from the root layout) on the client.
  */
 export type ElementConfig = {
 	component: () => Promise<unknown>;

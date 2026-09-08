@@ -7,7 +7,7 @@ The UI vocabulary is [`@webtides/element-library`](https://github.com/webtides/e
 1. **Use the elements directly**: `<el-button>`, `<el-input-field>`, `<el-password-field>`, `<el-notification>`, `<el-dialog>`, and everything else in the library. No Svelte wrappers around them; the one exception is `SubmitButton` (see below).
 2. **Type every tag you use** in `src/lib/design/elements.d.ts`, so svelte-check catches a wrong variant or attribute. Attributes are the library's: `variant`, `size`, `label`, `error-message`, … Booleans are written as booleans (`disabled={loading}`); element-js parses the resulting `"true"`/`"false"`.
 3. **Never build your own buttons, inputs, dialogs or notifications.** A component missing in element-library is filed as an issue in webtides/element-library; a local workaround is marked `// UPSTREAM: <issue-url>` and removed once the fix ships.
-4. **Semantic colours only** — `bg-primary`, `text-danger`, `border-success` — never `bg-blue-600`. They alias the `--el-*` tokens (see Theme).
+4. **Token colours only** — `bg-accent`, `text-fg`, `text-danger`, `border-border` — never `bg-blue-600`. Tailwind's names are the `--el-*` token names (see Theme).
 5. **Tailwind for layout and utilities**, the default spacing scale (`p-4`, `gap-6`, `mt-8`), no arbitrary values.
 6. **Every view handles these states**: loading (`Spinner`), error (`el-notification`), empty (`EmptyState`).
 
@@ -17,12 +17,12 @@ The UI vocabulary is [`@webtides/element-library`](https://github.com/webtides/e
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `src/lib/design/catalog.ts`    | One tag → module map (element-library's own `catalog`) with per-component SSR settings, plus the `properties` provider that seeds empty field values. Server and client read the same map. |
 | `src/hooks.server.ts`          | `init` loads the renderer's DOM shim and then `elementSSR`; the `handle` pre-renders every `el-*` tag on a page. Only the components on that page are loaded.                              |
-| `src/lib/design/autoload.ts`   | Called from the root layout's module scope: discovers the tags on the page, loads and defines them, and watches for elements added by client-side navigation.                              |
-| `src/app.css`                  | Imports `@webtides/element-library/themes/default.css`, then `src/lib/design/theme.css`, and maps Tailwind's semantic colours onto the tokens with `@theme inline`.                        |
+| `src/routes/+layout.svelte`    | Its module script calls the renderer's `autoload` with the catalog: discovers the tags on the page, loads and defines them, and watches for elements added by client-side navigation.      |
+| `src/app.css`                  | Imports `@webtides/element-library/themes/default.css`, then `src/lib/design/theme.css`, and exposes the tokens as Tailwind colours under the same names with `@theme inline`.             |
 | `src/lib/design/theme.css`     | The project's token overrides, plus the styles behind the `UPSTREAM` workarounds.                                                                                                          |
 | `src/lib/design/vendor.d.ts`   | Type shims for subpath exports that ship without declarations.                                                                                                                             |
-| `src/lib/design/elements.d.ts` | Attribute typing for the `el-*` tags used in templates.                                                                                                                                    |
-| `src/lib/design/components/`   | `SubmitButton` (the one wrapper), and the Svelte-only `Card`, `Spinner`, `EmptyState`, `ToastContainer`.                                                                                   |
+| `src/lib/design/elements.d.ts` | Attribute typing for the `el-*` tags used in templates (`UPSTREAM` webtides/element-library#89; extend it for every new tag).                                                              |
+| `src/lib/design/components/`   | `SubmitButton` (the one wrapper), and the Svelte-only `Card`, `Spinner`, `EmptyState`.                                                                                                     |
 
 Shadow components style themselves through the `--el-*` custom properties, which inherit into shadow roots; the document stylesheet is deliberately not copied into them (`adoptGlobalStyles: false`). Slotted content is light DOM and takes Tailwind classes as usual.
 
@@ -85,7 +85,18 @@ The only wrapper. `<el-button type="submit">` keeps its native button in the sha
 
 Variants: `default`, `primary` (informational), `success`, `neutral`, `warning`, `danger`. Set `role` yourself (`alert` for danger and warning, `status` otherwise): the element does it on upgrade, the server-rendered markup needs it before that and without JavaScript. Render the server's message from the form action (`form.error`, `form.success`) so it also shows after a native submit; see `docs/decisions/0003-profile-feedback-inline-not-toast.md`.
 
-Toasts: `addToast({ message, variant, duration })` from `$lib/features/toast/toast.svelte.js`; `ToastContainer` in the root layout renders the store as `el-notification` in a fixed stack. Toasts are client-only feedback; anything the user must see after a native submit belongs inline.
+Toasts are the element's own job: create an `el-notification`, set `variant`, `closable` and `duration`, and call `toast()`; it moves itself into a shared top-right stack, pauses the countdown while hovered or focused, and removes itself afterwards.
+
+```ts
+const note = document.createElement('el-notification');
+note.variant = 'success';
+note.closable = true;
+note.duration = 5000;
+note.textContent = 'Saved.';
+note.toast();
+```
+
+Toasts are client-only feedback; anything the user must see after a native submit belongs inline.
 
 ## Buttons and dialogs
 
@@ -117,21 +128,19 @@ Svelte components; element-library has no counterpart yet (webtides/element-libr
 
 ## Theme
 
-`themes/default.css` defines the whole `--el-*` contract with `light-dark()` and opts the document into `color-scheme: light dark`; `theme.css` overrides the values below, and `app.css` maps Tailwind's names onto them. Add a token in `theme.css`, alias it in `app.css` if utilities need it.
+`themes/default.css` defines the whole `--el-*` contract with `light-dark()` and opts the document into `color-scheme: light dark`; `theme.css` overrides the values below, and `app.css` exposes each token as a Tailwind colour under the same name, so `--el-color-accent` is `bg-accent` and `--el-color-fg-muted` is `text-fg-muted`. Add a token in `theme.css`, alias it in `app.css` if utilities need it.
 
-| Token                 | Tailwind            | Light     | Dark      |
-| --------------------- | ------------------- | --------- | --------- |
-| `--el-color-accent`   | `primary`           | `#2563eb` | `#3b82f6` |
-| `--el-color-danger`   | `danger`            | `#dc2626` | `#ef4444` |
-| `--el-color-success`  | `success`           | `#16a34a` | `#22c55e` |
-| `--el-color-warning`  | `warning`           | `#d97706` | `#f59e0b` |
-| `--el-color-fg`       | `text-primary`      | `#111827` | `#f9fafb` |
-| `--el-color-fg-muted` | `text-secondary`    | `#6b7280` | `#d1d5db` |
-| `--el-color-bg`       | `surface`           | `#ffffff` | `#111827` |
-| `--el-color-bg-muted` | `surface-secondary` | `#f3f4f6` | `#1f2937` |
-| `--el-color-border`   | `border`            | `#e5e7eb` | `#374151` |
-
-Project-only utilities without an element token (`primary-hover`, `primary-text`, `danger-hover`, `success-hover`, `warning-hover`, `text-muted`, `surface-hover`) are defined in `app.css`.
+| Token                 | Tailwind   | Light     | Dark      |
+| --------------------- | ---------- | --------- | --------- |
+| `--el-color-accent`   | `accent`   | `#2563eb` | `#3b82f6` |
+| `--el-color-danger`   | `danger`   | `#dc2626` | `#ef4444` |
+| `--el-color-success`  | `success`  | `#16a34a` | `#22c55e` |
+| `--el-color-warning`  | `warning`  | `#d97706` | `#f59e0b` |
+| `--el-color-fg`       | `fg`       | `#111827` | `#f9fafb` |
+| `--el-color-fg-muted` | `fg-muted` | `#6b7280` | `#d1d5db` |
+| `--el-color-bg`       | `bg`       | `#ffffff` | `#111827` |
+| `--el-color-bg-muted` | `bg-muted` | `#f3f4f6` | `#1f2937` |
+| `--el-color-border`   | `border`   | `#e5e7eb` | `#374151` |
 
 ## Upstream workarounds
 
@@ -144,6 +153,7 @@ All marked `UPSTREAM` in the code; each goes when its issue closes.
 | webtides/element-library#88              | none; a client-rendered `el-notification` shows no icon until fixed                                     |
 | webtides/element-js#167                  | `catalog.ts` seeds `value: ''` for fields without a `value` attribute (else the server writes `"null"`) |
 | webtides/element-library#85, renderer#13 | `vendor.d.ts` type shims                                                                                |
+| webtides/element-library#89              | `elements.d.ts`, hand-written attribute typings for the tags in use                                     |
 
 ## Testing
 

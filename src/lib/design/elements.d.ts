@@ -1,7 +1,10 @@
 /**
+ * UPSTREAM: https://github.com/webtides/element-library/issues/89
  * Attribute typing for the element-library tags used in Svelte templates, so
- * svelte-check catches a wrong variant or size. Booleans may be passed as
- * booleans; element-js parses the resulting "true"/"false" attributes.
+ * svelte-check catches a wrong variant or attribute. Hand-written from the
+ * library's custom-elements.json until it ships this as a generated
+ * `svelte/elements` augmentation; extend it for every new tag you use.
+ * Booleans may be passed as booleans; element-js parses "true"/"false".
  */
 import type { HTMLAttributes } from 'svelte/elements';
 

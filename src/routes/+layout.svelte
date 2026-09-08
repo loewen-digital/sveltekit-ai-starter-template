@@ -1,18 +1,18 @@
 <script module lang="ts">
 	import { browser } from '$app/environment';
-	import { autoloadElements } from '$lib/design/autoload.js';
+	import { autoload } from '@webtides/element-js-ssr-renderer/autoloader';
+	import { elementCatalog } from '$lib/design/catalog.js';
 
-	// Starts loading the element-library components as soon as the app bundle
-	// runs, ahead of hydration, so the server-rendered elements upgrade early.
-	if (browser) autoloadElements();
+	// Loads and defines the element-library components found on the page, and
+	// any added later by client-side navigation. Runs once, from the app
+	// bundle, ahead of hydration, so the server-rendered elements upgrade early.
+	if (browser) autoload({ resolve: elementCatalog });
 </script>
 
 <script lang="ts">
 	import '../app.css';
-	import { ToastContainer } from '$lib/design/components';
 
 	let { children } = $props();
 </script>
 
 {@render children()}
-<ToastContainer />
