@@ -1,0 +1,39 @@
+name: Release
+
+# Pushing a tag v<version> creates the GitHub Release for that version. Nothing is
+# published: this repository is a template, apps are created from it. The tag must
+# equal the version in package.json, and CHANGELOG.md must have a section
+# `## v<version> · <date> · <title>`; its lines become the release notes.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: npm
+      - name: Tag matches package.json
+        run: |
+          v="v$(node -p 'require("./package.json").version')"
+          [ "$v" = "$GITHUB_REF_NAME" ] || { echo "tag is $GITHUB_REF_NAME, package.json says $v"; exit 1; }
+      - name: Release notes from CHANGELOG.md
+        run: |
+          grep -m1 "^## $GITHUB_REF_NAME " CHANGELOG.md | sed 's/^## //' > "$RUNNER_TEMP/title"
+          awk -v v="$GITHUB_REF_NAME" '/^## /{ if (on) exit; on = ($2 == v) } on && !/^## /' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          [ -s "$RUNNER_TEMP/title" ] && [ -s "$RUNNER_TEMP/notes.md" ] || { echo "CHANGELOG.md has no section '## $GITHUB_REF_NAME · <date> · <title>'"; exit 1; }
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "$(cat "$RUNNER_TEMP/title")" --notes-file "$RUNNER_TEMP/notes.md"
+        env:
+          GH_TOKEN: ${{ github.token }}

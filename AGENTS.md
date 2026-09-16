@@ -106,7 +106,7 @@ Two ways to be here; check `GITHUB_ACTIONS`.
 
 - `## Unreleased` on top, then one `## v<Version> · <YYYY-MM-DD> · <Title>` heading per release; the version in `package.json` is the topmost released one. The heading format is a contract: some apps show the file as release notes.
 - Bullets are written for the people who use or build the project: what changed and why it matters, not which files moved. Keep the language the file already uses.
-- A release moves the Unreleased lines under a new version heading and bumps `package.json`. The loop never releases; Eddy does. Where this file says otherwise for a repository (version bump per commit), that rule wins.
+- A release moves the Unreleased lines under a new version heading, bumps `package.json`, commits as `chore(release): v<version>` and pushes the tag `v<version>`; `release.yml` then creates the GitHub Release from that section. The loop never releases; Eddy does. Where this file says otherwise for a repository (version bump per commit), that rule wins.
 
 **Writing for humans** (issues, PRs, comments):
 
