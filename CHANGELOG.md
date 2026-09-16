@@ -7,7 +7,7 @@ is the topmost released one here.
 
 ## Unreleased
 
-- CI and release workflows use the Node 24 builds of the GitHub actions (`checkout`, `setup-node`, `upload-artifact` on v5, like `agent.yml`), so runs no longer warn about the deprecated Node 20 runtime.
+- CI and release workflows use the Node 24 builds of the GitHub actions (`checkout` and `setup-node` on v5 like `agent.yml`, `upload-artifact` on v6), so runs no longer warn about the deprecated Node 20 runtime.
 
 ## v0.1.0 · 2026-09-16 · element-library, fullstack auth, flatdb on R2
 
