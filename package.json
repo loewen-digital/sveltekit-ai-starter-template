@@ -25,8 +25,7 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
-		"@types/better-sqlite3": "^7.6.8",
-		"drizzle-kit": "^0.30.0",
+		"@types/node": "^24.13.5",
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^10.0.0",
 		"eslint-plugin-svelte": "^2.46.0",
@@ -43,12 +42,11 @@
 		"wrangler": "^4.0.0"
 	},
 	"dependencies": {
-		"@lucia-auth/adapter-drizzle": "^1.1.0",
+		"@loewen-digital/flatdb": "^0.2.1",
+		"@loewen-digital/fullstack": "^0.2.0",
 		"@webtides/element-js-ssr-renderer": "0.4.0",
 		"@webtides/element-library": "0.2.0",
-		"better-sqlite3": "^11.0.0",
-		"drizzle-orm": "^0.38.0",
-		"lucia": "^3.2.0",
-		"worker-mailer": "^1.2.1"
+		"worker-mailer": "^1.2.1",
+		"zod": "^3.25.76"
 	}
 }

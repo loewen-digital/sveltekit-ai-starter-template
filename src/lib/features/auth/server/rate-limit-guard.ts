@@ -1,8 +1,13 @@
 import { fail, type ActionFailure, type RequestEvent } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import { authRateLimiter } from '$lib/server/rate-limit.js';
+import { createRateLimiter } from '@loewen-digital/fullstack/security';
 
 export type RateLimitFailure = ActionFailure<{ error: string }>;
+
+// 10 attempts per 15 minutes per IP, in memory. On Cloudflare Workers every
+// isolate has its own memory, so the limit is per isolate; a shared limit
+// needs Cloudflare KV or a Durable Object.
+const authRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
 
 /**
  * Guard for auth form actions. Call it as the first statement of an action and
@@ -22,9 +27,10 @@ export type RateLimitFailure = ActionFailure<{ error: string }>;
 export function checkAuthRateLimit(event: RequestEvent): RateLimitFailure | null {
 	if (env.DISABLE_RATE_LIMIT === 'true') return null;
 
-	const { allowed, retryAfterMs } = authRateLimiter.check(event.getClientAddress());
+	const { allowed, resetAt } = authRateLimiter.check(event.getClientAddress());
 	if (allowed) return null;
 
+	const retryAfterMs = Math.max(0, resetAt.getTime() - Date.now());
 	event.setHeaders({ 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) });
 
 	const minutes = Math.max(1, Math.ceil(retryAfterMs / 60_000));

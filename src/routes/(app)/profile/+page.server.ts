@@ -5,7 +5,7 @@ import {
 	validatePasswordConfirm,
 	normalizeEmail
 } from '$lib/shared/validation.js';
-import { getLucia } from '$lib/features/auth/server/auth.js';
+import { startSession } from '$lib/features/auth/server/auth.js';
 import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
 import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';
 import type { Actions, PageServerLoad } from './$types';
@@ -34,7 +34,7 @@ export const actions: Actions = {
 			return fail(400, { emailError: validationError });
 		}
 
-		const result = await updateEmail(locals.user.id, normalized, password);
+		const result = await updateEmail(locals, locals.user.id, normalized, password);
 		if (result.error) {
 			return fail(400, { emailError: result.error });
 		}
@@ -42,7 +42,12 @@ export const actions: Actions = {
 		// The address is already changed at this point, so a failed mail must not
 		// read as a full success — it would leave the user waiting for an inbox
 		// that never fills.
-		const { delivered } = await createVerificationToken(locals.user.id, normalized, url.origin);
+		const { delivered } = await createVerificationToken(
+			locals,
+			locals.user.id,
+			normalized,
+			url.origin
+		);
 
 		if (!delivered) {
 			return {
@@ -56,7 +61,8 @@ export const actions: Actions = {
 		};
 	},
 
-	updatePassword: async ({ request, locals, cookies }) => {
+	updatePassword: async (event) => {
+		const { request, locals } = event;
 		if (!locals.user) {
 			return fail(401, { passwordError: 'Not authenticated' });
 		}
@@ -84,20 +90,14 @@ export const actions: Actions = {
 			return fail(400, { passwordError: confirmError });
 		}
 
-		const result = await updatePassword(locals.user.id, currentPassword, newPassword);
+		const result = await updatePassword(locals, locals.user.id, currentPassword, newPassword);
 		if (result.error) {
 			return fail(400, { passwordError: result.error });
 		}
 
-		// updatePassword invalidated every session, including this one. Issue a
+		// updatePassword revoked every session, including this one. Issue a
 		// fresh session so the user who just changed their password stays in.
-		const lucia = getLucia();
-		const session = await lucia.createSession(locals.user.id, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+		await startSession(event, { id: locals.user.id, email: locals.user.email });
 
 		return { passwordSuccess: 'Password updated successfully' };
 	}

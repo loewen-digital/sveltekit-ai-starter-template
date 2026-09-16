@@ -1,53 +1,46 @@
 import type { Handle } from '@sveltejs/kit';
-import { initDb } from '$lib/server/db/index.js';
-import { logger } from '$lib/server/logger.js';
-import { getLucia } from './auth.js';
+import { sequence } from '@sveltejs/kit/hooks';
+import { clearAuthCookie, createHandle } from '@loewen-digital/fullstack/adapters/sveltekit';
+import { createRequestDb } from '$lib/server/db.js';
+import { AUTH_COOKIE, createAppAuth, toSessionUser } from './auth.js';
 
-export const authHandle: Handle = async ({ event, resolve }) => {
-	await initDb(event.platform?.env?.DB);
-	const lucia = getLucia();
+/** The database and the auth stack for this request, on `event.locals`. */
+const stackHandle: Handle = ({ event, resolve }) => {
+	const db = createRequestDb(event.platform);
+	const { auth, authDb } = createAppAuth(db);
+	event.locals.db = db;
+	event.locals.auth = auth;
+	event.locals.authDb = authDb;
+	event.locals.authSession = null;
+	event.locals.user = null;
+	return resolve(event);
+};
 
-	const sessionId = event.cookies.get(lucia.sessionCookieName);
+/**
+ * fullstack validates the auth cookie against the sessions collection and
+ * sets `locals.authSession`. Its handle is a closure over this request's
+ * stack, so building it here costs nothing.
+ */
+const fullstackHandle: Handle = ({ event, resolve }) =>
+	createHandle({ auth: event.locals.auth }, { authCookie: AUTH_COOKIE })({ event, resolve });
 
-	if (!sessionId) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
+/**
+ * Loads the user behind the session; fullstack leaves that to the app
+ * (loewen-digital/fullstack#9). A cookie without a user behind it is dropped.
+ */
+const userHandle: Handle = async ({ event, resolve }) => {
+	const { auth, authDb, authSession } = event.locals;
+	const user = authSession ? await authDb.findUserById(authSession.userId) : null;
 
-	try {
-		const { session, user } = await lucia.validateSession(sessionId);
-
-		if (session && session.fresh) {
-			const sessionCookie = lucia.createSessionCookie(session.id);
-			event.cookies.set(sessionCookie.name, sessionCookie.value, {
-				path: '.',
-				...sessionCookie.attributes
-			});
-		}
-
-		if (!session) {
-			const sessionCookie = lucia.createBlankSessionCookie();
-			event.cookies.set(sessionCookie.name, sessionCookie.value, {
-				path: '.',
-				...sessionCookie.attributes
-			});
-		}
-
-		event.locals.user = user;
-		event.locals.session = session;
-	} catch (error) {
-		logger.error('Session validation failed', {
-			error: error instanceof Error ? error.message : String(error)
-		});
-		event.locals.user = null;
-		event.locals.session = null;
-		const sessionCookie = lucia.createBlankSessionCookie();
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+	if (user) {
+		event.locals.user = toSessionUser(user);
+	} else if (event.cookies.get(AUTH_COOKIE)) {
+		if (authSession) await auth.destroySession(authSession.token);
+		event.locals.authSession = null;
+		clearAuthCookie(event, { authCookie: AUTH_COOKIE });
 	}
 
 	return resolve(event);
 };
+
+export const authHandle = sequence(stackHandle, fullstackHandle, userHandle);

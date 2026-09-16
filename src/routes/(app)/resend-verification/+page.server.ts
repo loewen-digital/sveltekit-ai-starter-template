@@ -17,6 +17,7 @@ export const actions: Actions = {
 		}
 
 		const { delivered } = await createVerificationToken(
+			locals,
 			locals.user.id,
 			locals.user.email,
 			url.origin

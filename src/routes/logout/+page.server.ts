@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import { getLucia } from '$lib/features/auth/server/auth.js';
+import { clearAuthCookie } from '@loewen-digital/fullstack/adapters/sveltekit';
+import { AUTH_COOKIE } from '$lib/features/auth/server/auth.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -7,19 +8,14 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ locals, cookies }) => {
-		if (!locals.session) {
+	default: async (event) => {
+		const { auth, authSession } = event.locals;
+		if (!authSession) {
 			redirect(302, '/login');
 		}
 
-		const lucia = getLucia();
-		await lucia.invalidateSession(locals.session.id);
-
-		const sessionCookie = lucia.createBlankSessionCookie();
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+		await auth.destroySession(authSession.token);
+		clearAuthCookie(event, { authCookie: AUTH_COOKIE });
 
 		redirect(302, '/login');
 	}

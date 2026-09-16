@@ -6,9 +6,8 @@ node_modules
 !.env.example
 build
 dist
-*.db
-*.sqlite
-# drizzle/*.sql  # Uncomment to ignore generated migrations
+# JSON documents written by `npm run dev` (flatdb FsAdapter)
+.data
 .DS_Store
 .idea
 playwright-report

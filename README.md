@@ -1,29 +1,27 @@
 # SvelteKit Starter Template
 
-Opinionated SvelteKit starter with Auth, DB, Design System, Testing and Cloudflare deployment.
+Opinionated SvelteKit starter with auth, a document database, a design system, tests and Cloudflare deployment.
 
 ## Quick Start
 
 ```bash
 npm install
-npm run db:migrate
 npm run dev
 ```
 
+No database to set up: documents are written as JSON files under `.data/`.
+
 ## Scripts
 
-| Command               | Description                           |
-| --------------------- | ------------------------------------- |
-| `npm run dev`         | Start dev server                      |
-| `npm run build`       | Production build (Cloudflare Workers) |
-| `npm run check`       | svelte-check + TypeScript             |
-| `npm run lint`        | ESLint + Prettier                     |
-| `npm run format`      | Format code with Prettier             |
-| `npm test`            | Run Vitest unit tests                 |
-| `npm run test:e2e`    | Run Playwright E2E tests              |
-| `npm run db:generate` | Generate Drizzle migrations           |
-| `npm run db:migrate`  | Apply Drizzle migrations              |
-| `npm run db:studio`   | Open Drizzle Studio                   |
+| Command            | Description                           |
+| ------------------ | ------------------------------------- |
+| `npm run dev`      | Start dev server                      |
+| `npm run build`    | Production build (Cloudflare Workers) |
+| `npm run check`    | svelte-check + TypeScript             |
+| `npm run lint`     | ESLint + Prettier                     |
+| `npm run format`   | Format code with Prettier             |
+| `npm test`         | Run Vitest unit tests                 |
+| `npm run test:e2e` | Run Playwright E2E tests              |
 
 ## Tech Stack
 
@@ -31,8 +29,8 @@ npm run dev
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS v4
 - **Design system:** @webtides/element-library Web Components, server-rendered via @webtides/element-js-ssr-renderer
-- **Auth:** Lucia Auth v3 + Drizzle Adapter
-- **Database:** Drizzle ORM + SQLite (local) / D1 (Cloudflare)
+- **Auth:** @loewen-digital/fullstack (auth, security, mail) with its SvelteKit adapter
+- **Database:** @loewen-digital/flatdb, JSON documents with zod schemas; `.data/` locally, Cloudflare R2 in production
 - **Testing:** Vitest (Unit) + Playwright (E2E)
 - **Deployment:** Cloudflare Workers
 
@@ -45,9 +43,11 @@ src/
 │   │   ├── components/   # SubmitButton (upstream workaround), Card, Spinner, EmptyState; everything else is <el-…> directly
 │   │   └── DESIGN-SYSTEM.md
 │   ├── features/         # Feature modules
-│   │   └── auth/         # Authentication (Lucia + Drizzle)
+│   │   └── auth/         # Authentication (fullstack auth on flatdb)
 │   ├── server/           # Server-only code
-│   │   └── db/           # Drizzle ORM + schema
+│   │   ├── collections/  # zod schemas, one file per collection
+│   │   ├── db.ts         # Opens the collections per request (FsAdapter, R2Adapter)
+│   │   └── email/        # Mail providers and templates
 │   └── shared/           # Shared types and utils
 ├── routes/
 │   ├── (app)/            # Protected routes (requires auth)
@@ -59,12 +59,39 @@ src/
 
 ## Auth
 
-Session-based authentication with email + password:
+Session-based authentication with email + password, provided by
+[`@loewen-digital/fullstack`](https://github.com/loewen-digital/fullstack):
 
 - **Register:** `/register`
 - **Login:** `/login`
 - **Logout:** POST to `/logout`
 - **Protected routes:** Everything under `(app)/` requires authentication
+
+Sessions are documents in the `sessions` collection; the `fs_token` cookie
+carries an opaque token and lasts seven days. The auth handle in
+`src/lib/features/auth/server/middleware.ts` builds the stack per request and
+puts `db`, `auth`, `authDb`, `authSession` and `user` on `event.locals`.
+
+## Data
+
+[`@loewen-digital/flatdb`](https://github.com/loewen-digital/flatdb) stores
+every document as a JSON file: one folder per collection, one file per
+document, plus an `_index.json` the queries read. Collections are zod schemas
+in `src/lib/server/collections/`; a field a schema does not declare is stripped
+on write, so add new fields there first.
+
+- **Local development:** `.data/` in the project (ignored by git). Open the
+  files to inspect or edit data; delete the folder to start over. Writes go
+  through `src/lib/server/atomic-fs-adapter.ts`, which adds atomic writes and
+  compare-and-swap until flatdb's `FsAdapter` has them
+  (loewen-digital/flatdb#10).
+- **Tests:** `MemoryAdapter`, nothing touches the disk.
+- **Production:** the R2 bucket bound as `CONTENT` in `wrangler.jsonc`. See
+  Deployment.
+
+The database is opened per request (`locals.db`), never at module level:
+flatdb caches a collection's index in memory, and on Workers another isolate
+may have written in the meantime.
 
 ## Email
 
@@ -123,15 +150,16 @@ per-isolate cap on concurrent TCP connections, and no delivery webhooks.
 
 ### Adding another provider
 
-`sendEmail()` talks to an `EmailProvider`, so swapping vendors is local:
+`sendEmail()` talks to a fullstack `MailDriver` with a `name`, so swapping
+vendors is local:
 
-1. Add `src/lib/server/email/providers/<name>.ts` implementing `EmailProvider`.
+1. Take a driver from `@loewen-digital/fullstack/mail` (Resend and Postmark ship
+   there and run on Workers because they use plain `fetch`), or add
+   `src/lib/server/email/providers/<name>.ts` implementing `EmailProvider`.
 2. Return it from `resolveEmailProvider()` in `src/lib/server/email/provider.ts`.
 
-The Resend adapter uses plain `fetch` rather than an SDK so it runs unchanged on
-the Cloudflare Workers runtime — a good template to copy. Both shipped adapters
-take their transport as an injectable argument, which is how they are unit
-tested without touching the network.
+The SMTP provider takes its transport as an injectable argument, which is how it
+is unit tested without opening a socket.
 
 ## Design System
 
@@ -147,9 +175,11 @@ Import components:
 
 ## Deployment
 
-Configured for Cloudflare Workers. Update `wrangler.jsonc` with your D1 database ID, then:
+Configured for Cloudflare Workers. Create the R2 bucket once (the name is set
+in `wrangler.jsonc`), then build and deploy:
 
 ```bash
+npx wrangler r2 bucket create sveltekit-starter-content
 npm run build
 npx wrangler deploy
 ```
@@ -164,4 +194,4 @@ npx wrangler dev
 
 `npm run preview` runs a plain Vite preview server instead: fine for
 checking pages and forms, but it runs on Node, not the Workers runtime, so
-it can't exercise Workers-only APIs (`cloudflare:sockets`, D1, etc.).
+it can't exercise Workers-only APIs (`cloudflare:sockets`, R2, etc.).

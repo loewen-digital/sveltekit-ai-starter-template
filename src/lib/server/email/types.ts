@@ -1,17 +1,17 @@
+import type { MailDriver, MailMessage } from '@loewen-digital/fullstack/mail';
+
+export type { MailMessage };
+
+/** What the app sends: one recipient, HTML body. A subset of `MailMessage`. */
 export interface EmailMessage {
 	to: string;
 	subject: string;
 	html: string;
 }
 
-export interface EmailProvider {
-	/** Identifies the provider in logs. */
+/** A fullstack mail driver that says who it is in the logs. */
+export interface EmailProvider extends MailDriver {
 	readonly name: string;
-	/**
-	 * Delivers the message, or throws. Never resolve when the message was not
-	 * handed off — silent failure is what made the previous stub dangerous.
-	 */
-	send(message: EmailMessage): Promise<void>;
 }
 
 /** The provider was reachable but refused or failed to accept the message. */

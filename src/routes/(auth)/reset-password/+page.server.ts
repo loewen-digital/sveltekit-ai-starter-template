@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const token = formData.get('token');
 		const password = formData.get('password');
@@ -41,7 +41,7 @@ export const actions: Actions = {
 			return fail(400, { error: confirmError, token });
 		}
 
-		const result = await resetPassword(token, password);
+		const result = await resetPassword(locals, token, password);
 		if (result.error) {
 			return fail(400, { error: result.error, token });
 		}

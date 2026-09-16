@@ -51,9 +51,6 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Prepare database
-        run: npm run db:migrate
-
       # The dev server is started by playwright.config.ts, which also sets
       # DISABLE_RATE_LIMIT so the suite is not throttled for driving every
       # test from a single IP.

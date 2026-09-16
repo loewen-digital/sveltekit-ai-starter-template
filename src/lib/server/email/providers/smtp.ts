@@ -1,4 +1,4 @@
-import { EmailDeliveryError, type EmailMessage, type EmailProvider } from '../types.js';
+import { EmailDeliveryError, type EmailProvider, type MailMessage } from '../types.js';
 
 /** Cloudflare blocks outbound connections on port 25 outright. */
 export const BLOCKED_SMTP_PORT = 25;
@@ -99,6 +99,13 @@ const deliverViaWorkerMailer: SmtpSend = async (config, envelope) => {
 	);
 };
 
+/** One string for the To header, whichever shape the message carries. */
+function recipients(to: MailMessage['to']): string {
+	return (Array.isArray(to) ? to : [to])
+		.map((address) => (typeof address === 'string' ? address : address.email))
+		.join(', ');
+}
+
 /**
  * Speaks SMTP to any mail server, which is the point: unlike an HTTP provider
  * this needs no vendor-specific driver — host, port and credentials are enough,
@@ -116,13 +123,13 @@ export function createSmtpProvider(
 
 	return {
 		name: 'smtp',
-		async send(message: EmailMessage): Promise<void> {
+		async send(message: MailMessage): Promise<void> {
 			try {
 				await send(config, {
 					from,
-					to: message.to,
+					to: recipients(message.to),
 					subject: message.subject,
-					html: message.html
+					html: message.html ?? ''
 				});
 			} catch (error) {
 				throw new EmailDeliveryError(

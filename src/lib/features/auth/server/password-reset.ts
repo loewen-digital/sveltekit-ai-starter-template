@@ -1,95 +1,63 @@
-import { hashPassword } from '$lib/server/password.js';
-import { getLucia } from './auth.js';
-import { getDb } from '$lib/server/db/index.js';
-import { userTable, passwordResetTokenTable } from '$lib/server/db/schema.js';
 import { sendEmail } from '$lib/server/email/index.js';
 import { passwordResetEmail } from '$lib/server/email/templates.js';
 import { logger } from '$lib/server/logger.js';
-import { generateToken, hashToken, generateId, isTokenExpired } from '$lib/server/token.js';
-import { eq } from 'drizzle-orm';
+import type { AuthContext } from './auth.js';
 
-const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+export const PASSWORD_RESET = 'password_reset';
 
-export async function requestPasswordReset(email: string, origin: string): Promise<void> {
-	const db = getDb();
-	const user = await db.select().from(userTable).where(eq(userTable.email, email)).get();
+export async function requestPasswordReset(
+	{ db, auth, authDb }: AuthContext,
+	email: string,
+	origin: string
+): Promise<void> {
+	const user = await authDb.findUserByEmail(email);
 
 	if (!user) {
-		// Don't reveal whether email exists
+		// Don't reveal whether the email exists
 		logger.info('Password reset requested for non-existent email', { email });
 		return;
 	}
 
-	// Delete any existing tokens for this user
-	await db.delete(passwordResetTokenTable).where(eq(passwordResetTokenTable.userId, user.id));
-
-	const token = generateToken();
-	const hashedToken = hashToken(token);
-
-	await db.insert(passwordResetTokenTable).values({
-		id: generateId(),
-		userId: user.id,
-		hashedToken,
-		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_MS)
-	});
-
-	const resetUrl = `${origin}/reset-password?token=${token}`;
-	const template = passwordResetEmail(resetUrl);
+	// One live link per user, as for email verification.
+	// UPSTREAM: https://github.com/loewen-digital/fullstack/issues/26
+	await db.tokens.delete({ userId: String(user.id), type: PASSWORD_RESET });
 
 	// Swallowed on purpose: this function must be indistinguishable from the
 	// unknown-address path above, and a propagating error would turn a delivery
 	// problem into an account-existence oracle. Operators see it in the logs.
-	try {
-		await sendEmail({
-			to: user.email,
-			...template
-		});
-	} catch (error) {
-		logger.error('Failed to deliver password reset email', {
-			userId: user.id,
-			error: error instanceof Error ? error.message : String(error)
-		});
-		return;
-	}
-
-	logger.info('Password reset token created', { userId: user.id });
+	await auth.sendPasswordResetEmail(user, async (to, token) => {
+		try {
+			await sendEmail({ to, ...passwordResetEmail(`${origin}/reset-password?token=${token}`) });
+			logger.info('Password reset token created', { userId: user.id });
+		} catch (error) {
+			logger.error('Failed to deliver password reset email', {
+				userId: user.id,
+				error: error instanceof Error ? error.message : String(error)
+			});
+		}
+	});
 }
 
 export async function resetPassword(
+	{ db, auth, authDb }: AuthContext,
 	token: string,
 	newPassword: string
 ): Promise<{ error?: string }> {
-	const db = getDb();
-	const hashedToken = hashToken(token);
-
-	const resetToken = await db
-		.select()
-		.from(passwordResetTokenTable)
-		.where(eq(passwordResetTokenTable.hashedToken, hashedToken))
-		.get();
-
-	if (!resetToken) {
+	// fullstack's resetPassword() returns only a boolean; the user id is needed
+	// below to revoke the sessions, so its steps run here.
+	// UPSTREAM: https://github.com/loewen-digital/fullstack/issues/25
+	const userId = await auth.verifyToken(token, PASSWORD_RESET);
+	if (userId === null) {
 		return { error: 'Invalid or expired reset link' };
 	}
 
-	if (isTokenExpired(resetToken.expiresAt)) {
-		await db.delete(passwordResetTokenTable).where(eq(passwordResetTokenTable.id, resetToken.id));
-		return { error: 'Invalid or expired reset link' };
-	}
+	await authDb.updateUserPassword(userId, await auth.hashPassword(newPassword));
+	await db.tokens.delete({ userId: String(userId), type: PASSWORD_RESET });
 
-	const passwordHash = await hashPassword(newPassword);
+	// A reset is the recovery path after a takeover, so every session an
+	// attacker may still hold dies with it.
+	await db.sessions.delete({ userId: String(userId) });
 
-	await db.update(userTable).set({ passwordHash }).where(eq(userTable.id, resetToken.userId));
-
-	// Delete all reset tokens for this user
-	await db
-		.delete(passwordResetTokenTable)
-		.where(eq(passwordResetTokenTable.userId, resetToken.userId));
-
-	// Invalidate every existing session — a reset is the recovery path after a
-	// takeover, so any session an attacker still holds must die with it.
-	await getLucia().invalidateUserSessions(resetToken.userId);
-
-	logger.info('Password reset completed', { userId: resetToken.userId });
+	logger.info('Password reset completed', { userId });
 	return {};
 }

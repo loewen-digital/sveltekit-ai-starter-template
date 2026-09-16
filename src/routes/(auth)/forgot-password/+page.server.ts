@@ -15,7 +15,7 @@ export const actions: Actions = {
 		const limited = checkAuthRateLimit(event);
 		if (limited) return limited;
 
-		const { request, url } = event;
+		const { request, locals, url } = event;
 		const formData = await request.formData();
 		const email = formData.get('email');
 
@@ -29,7 +29,7 @@ export const actions: Actions = {
 			return { success: true };
 		}
 
-		await requestPasswordReset(normalizedEmail, url.origin);
+		await requestPasswordReset(locals, normalizedEmail, url.origin);
 
 		// Always return success to prevent email enumeration
 		return { success: true };

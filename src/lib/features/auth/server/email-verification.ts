@@ -1,12 +1,9 @@
-import { getDb } from '$lib/server/db/index.js';
-import { userTable, emailVerificationTokenTable } from '$lib/server/db/schema.js';
 import { sendEmail } from '$lib/server/email/index.js';
 import { emailVerificationEmail } from '$lib/server/email/templates.js';
 import { logger } from '$lib/server/logger.js';
-import { generateToken, hashToken, generateId, isTokenExpired } from '$lib/server/token.js';
-import { eq } from 'drizzle-orm';
+import type { AuthContext } from './auth.js';
 
-const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const EMAIL_VERIFICATION = 'email_verification';
 
 export interface VerificationTokenResult {
 	/** False when the token was stored but the mail could not be handed off. */
@@ -14,87 +11,49 @@ export interface VerificationTokenResult {
 }
 
 export async function createVerificationToken(
+	{ db, auth }: AuthContext,
 	userId: string,
 	email: string,
 	origin: string
 ): Promise<VerificationTokenResult> {
-	const db = getDb();
+	// One live link per user: a link mailed to a previous address must not
+	// verify the current one. fullstack keeps older tokens until they expire.
+	// UPSTREAM: https://github.com/loewen-digital/fullstack/issues/26
+	await db.tokens.delete({ userId, type: EMAIL_VERIFICATION });
 
-	// Delete existing tokens for this user
-	await db
-		.delete(emailVerificationTokenTable)
-		.where(eq(emailVerificationTokenTable.userId, userId));
-
-	const token = generateToken();
-	const hashedToken = hashToken(token);
-
-	await db.insert(emailVerificationTokenTable).values({
-		id: generateId(),
-		userId,
-		email,
-		hashedToken,
-		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_MS)
+	// The token is stored before the mail goes out, so a delivery failure is
+	// recoverable: the user can trigger a resend. Report it instead of throwing,
+	// and let each caller decide whether it is worth surfacing.
+	let delivered = true;
+	await auth.sendVerificationEmail({ id: userId, email }, async (to, token) => {
+		try {
+			await sendEmail({ to, ...emailVerificationEmail(`${origin}/verify-email?token=${token}`) });
+		} catch (error) {
+			logger.error('Failed to deliver verification email', {
+				userId,
+				email,
+				error: error instanceof Error ? error.message : String(error)
+			});
+			delivered = false;
+		}
 	});
 
-	const verifyUrl = `${origin}/verify-email?token=${token}`;
-	const template = emailVerificationEmail(verifyUrl);
-
-	// The token is already stored, so a delivery failure is recoverable: the user
-	// can trigger a resend. Report it instead of throwing, and let each caller
-	// decide whether it is worth surfacing.
-	try {
-		await sendEmail({
-			to: email,
-			...template
-		});
-	} catch (error) {
-		logger.error('Failed to deliver verification email', {
-			userId,
-			email,
-			error: error instanceof Error ? error.message : String(error)
-		});
-		return { delivered: false };
-	}
-
-	logger.info('Email verification token created', { userId, email });
-	return { delivered: true };
+	if (delivered) logger.info('Email verification token created', { userId, email });
+	return { delivered };
 }
 
-export async function verifyEmail(token: string): Promise<{ error?: string }> {
-	const db = getDb();
-	const hashedToken = hashToken(token);
-
-	const verificationToken = await db
-		.select()
-		.from(emailVerificationTokenTable)
-		.where(eq(emailVerificationTokenTable.hashedToken, hashedToken))
-		.get();
-
-	if (!verificationToken) {
+export async function verifyEmail(
+	{ db, auth }: AuthContext,
+	token: string
+): Promise<{ error?: string }> {
+	const user = await auth.verifyEmail(token);
+	if (!user) {
 		return { error: 'Invalid or expired verification link' };
 	}
 
-	if (isTokenExpired(verificationToken.expiresAt)) {
-		await db
-			.delete(emailVerificationTokenTable)
-			.where(eq(emailVerificationTokenTable.id, verificationToken.id));
-		return { error: 'Invalid or expired verification link' };
-	}
+	// The used link and any older one of this user are done with.
+	await db.tokens.delete({ userId: String(user.id), type: EMAIL_VERIFICATION });
 
-	// Update user email (in case it was changed) and mark as verified
-	await db
-		.update(userTable)
-		.set({ email: verificationToken.email, emailVerified: true })
-		.where(eq(userTable.id, verificationToken.userId));
-
-	// Delete all verification tokens for this user
-	await db
-		.delete(emailVerificationTokenTable)
-		.where(eq(emailVerificationTokenTable.userId, verificationToken.userId));
-
-	logger.info('Email verified', {
-		userId: verificationToken.userId,
-		email: verificationToken.email
-	});
+	logger.info('Email verified', { userId: user.id, email: user.email });
 	return {};
 }

@@ -7,11 +7,10 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	"d1_databases": [
+	"r2_buckets": [
 		{
-			"binding": "DB",
-			"database_name": "sveltekit-starter-db",
-			"database_id": "YOUR_D1_DATABASE_ID"
+			"binding": "CONTENT",
+			"bucket_name": "sveltekit-starter-content"
 		}
 	]
 }

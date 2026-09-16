@@ -7,8 +7,8 @@ Single instruction file for every coding agent working in this repository. Codex
 - SvelteKit v2, Svelte 5 (runes: $state, $derived, $effect, $props, $bindable)
 - TypeScript strict mode
 - Tailwind CSS v4
-- Lucia Auth v3 + Drizzle adapter
-- Drizzle ORM + SQLite (local) / D1 (Cloudflare)
+- `@loewen-digital/fullstack` (auth, security rate limiter, mail) with its SvelteKit adapter
+- `@loewen-digital/flatdb`: JSON documents with zod schemas; `.data/` locally, R2 on Cloudflare
 - Vitest (unit) + Playwright (E2E)
 - Cloudflare Workers adapter (`@sveltejs/adapter-cloudflare` 7)
 - Node 22, npm
@@ -21,15 +21,13 @@ Single instruction file for every coding agent working in this repository. Codex
 - `npm run lint` — ESLint + Prettier
 - `npm test` — Vitest unit tests
 - `npm run test:e2e` — Playwright E2E tests
-- `npm run db:generate` — generate a Drizzle migration
-- `npm run db:migrate` — run Drizzle migrations
-- `npm run db:studio` — Drizzle Studio
 
 ## Architecture
 
 - Feature-based: src/lib/features/[name]/
 - Design system: src/lib/design/components/
-- Server code: src/lib/server/ (DB, shared server utils)
+- Server code: src/lib/server/ (database, mail, shared server utils)
+- Collections: zod schemas in src/lib/server/collections/, opened per request in src/lib/server/db.ts and reachable as `locals.db`; no SQL, no migrations
 - Feature server code: src/lib/features/[name]/server/
 - Route groups: (auth) for login/register, (app) for protected pages
 - Shared types: src/lib/shared/types/
@@ -67,6 +65,7 @@ Single instruction file for every coding agent working in this repository. Codex
 - After every change: npm run check
 - Forms: progressive enhancement with SvelteKit form actions
 - Server-only code: always in .server.ts or a server/ directory
+- Data: never a module-level database; take `locals.db`, `locals.auth` and `locals.authDb` from the request. New fields go into the collection's zod schema, flatdb strips the rest
 
 ## Agent Loop
 

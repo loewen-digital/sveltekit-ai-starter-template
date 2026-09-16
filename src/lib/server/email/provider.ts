@@ -1,5 +1,5 @@
+import { createResendDriver } from '@loewen-digital/fullstack/mail';
 import { createConsoleProvider } from './providers/console.js';
-import { createResendProvider } from './providers/resend.js';
 import {
 	BLOCKED_SMTP_PORT,
 	IMPLICIT_TLS_PORT,
@@ -38,7 +38,10 @@ function buildResend(env: EmailEnv): EmailProvider {
 	if (!apiKey) {
 		throw new EmailConfigurationError('EMAIL_PROVIDER=resend requires RESEND_API_KEY.');
 	}
-	return createResendProvider({ apiKey, from: requireFrom(env) });
+	// The sender is applied per message by the mail instance (see index.ts);
+	// it is only checked here so a missing EMAIL_FROM fails at startup.
+	requireFrom(env);
+	return { name: 'resend', ...createResendDriver({ apiKey }) };
 }
 
 function parseSmtpPort(raw: string | undefined): number {
