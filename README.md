@@ -163,14 +163,23 @@ is unit tested without opening a socket.
 
 ## Design System
 
-See [`src/lib/design/DESIGN-SYSTEM.md`](src/lib/design/DESIGN-SYSTEM.md) for components and usage.
-
-Import components:
+The design system is [`@webtides/element-library`](https://github.com/webtides/element-library),
+server-rendered and used directly as `<el-…>` tags; see
+[`src/lib/design/DESIGN-SYSTEM.md`](src/lib/design/DESIGN-SYSTEM.md) for the
+elements, tokens and rules. `$lib/design/components` holds only what the
+library lacks: `Card`, `EmptyState`, `Spinner` and `SubmitButton`.
 
 ```svelte
 <script lang="ts">
-	import { Button, Input, Card, Alert } from '$lib/design/components';
+	import { Card, SubmitButton } from '$lib/design/components';
 </script>
+
+<Card>
+	<form method="POST">
+		<el-input-field name="email" type="email" label="Email"></el-input-field>
+		<SubmitButton variant="primary">Save</SubmitButton>
+	</form>
+</Card>
 ```
 
 ## Deployment
