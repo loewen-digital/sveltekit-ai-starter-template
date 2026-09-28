@@ -13,15 +13,14 @@ No database to set up: documents are written as JSON files under `.data/`.
 
 ## Scripts
 
-| Command            | Description                           |
-| ------------------ | ------------------------------------- |
-| `npm run dev`      | Start dev server                      |
-| `npm run build`    | Production build (Cloudflare Workers) |
-| `npm run check`    | svelte-check + TypeScript             |
-| `npm run lint`     | ESLint + Prettier                     |
-| `npm run format`   | Format code with Prettier             |
-| `npm test`         | Run Vitest unit tests                 |
-| `npm run test:e2e` | Run Playwright E2E tests              |
+| Command            | Description                                                         |
+| ------------------ | ------------------------------------------------------------------- |
+| `npm run dev`      | Start dev server (`vp dev`)                                         |
+| `npm run build`    | Production build for Cloudflare Workers (`vp build`)                |
+| `npm run check`    | `vp check` (format, lint, TypeScript) plus svelte-check (`.svelte`) |
+| `npm run format`   | `vp check --fix`: format and apply lint autofixes                   |
+| `npm test`         | Unit tests (`vp test run`)                                          |
+| `npm run test:e2e` | Playwright E2E tests                                                |
 
 ## Tech Stack
 
@@ -31,7 +30,8 @@ No database to set up: documents are written as JSON files under `.data/`.
 - **Design system:** @webtides/element-library Web Components, server-rendered via @webtides/element-js-ssr-renderer
 - **Auth:** @loewen-digital/fullstack (auth, security, mail) with its SvelteKit adapter
 - **Database:** @loewen-digital/flatdb, JSON documents with zod schemas; `.data/` locally, Cloudflare R2 in production
-- **Testing:** Vitest (Unit) + Playwright (E2E)
+- **Toolchain:** Vite+ (`vite-plus`): Vite 8, Vitest 5, Oxlint, Oxfmt, all configured in `vite.config.ts`
+- **Testing:** Vitest through `vite-plus/test` (Unit) + Playwright (E2E)
 - **Deployment:** Cloudflare Workers
 
 ## Project Structure

@@ -27,7 +27,10 @@ export const actions: Actions = {
 			typeof password !== 'string' ||
 			typeof passwordConfirm !== 'string'
 		) {
-			return fail(400, { error: 'Invalid form data', email: String(email ?? '') });
+			return fail(400, {
+				error: 'Invalid form data',
+				email: typeof email === 'string' ? email : ''
+			});
 		}
 
 		const normalizedEmail = normalizeEmail(email);

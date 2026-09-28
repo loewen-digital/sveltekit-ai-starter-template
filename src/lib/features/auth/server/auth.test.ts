@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import { MemoryAdapter } from '@loewen-digital/flatdb';
 import { createDb } from '$lib/server/db.js';
 import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';

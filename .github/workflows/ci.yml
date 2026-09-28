@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Check, lint, unit, build
+    name: Check, unit, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -23,11 +23,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Types
+      - name: Format, lint, types
         run: npm run check
-
-      - name: Lint & formatting
-        run: npm run lint
 
       - name: Unit tests
         run: npm test

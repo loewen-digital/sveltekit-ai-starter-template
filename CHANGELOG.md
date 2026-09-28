@@ -7,6 +7,8 @@ is the topmost released one here.
 
 ## Unreleased
 
+- Toolchain is Vite+ 1.0 (`vite-plus`), configured in `vite.config.ts` ([decision 0007](docs/decisions/0007-vite-plus-toolchain.md)): Vite 8, Vitest 5 (unit tests import from `vite-plus/test`), Oxlint and Oxfmt with the former Prettier settings. ESLint, Prettier, their plugins and `globals` are gone; `npm run check` runs `vp check` (format, lint, type check) and then svelte-check, `npm run format` runs `vp check --fix`, `npm run lint` is gone and so is its CI step. Oxlint reads only the `<script>` of `.svelte` files, so the `eslint-plugin-svelte` template rules are dropped; svelte-check still reports Svelte's compiler and accessibility warnings. Upgraded with it: SvelteKit 2.70, `@sveltejs/vite-plugin-svelte` 7, Svelte 5.57, Tailwind 4.3, TypeScript 6. AGENTS.md now names Node 24 instead of 22. `.vscode/` recommends the Vite+ extension pack and formats with Oxc instead of Prettier.
+- Registering with a malformed form no longer echoes `[object File]` back into the email field, and the SMTP error under `vite dev` keeps the original import error as its `cause`; both found by the new type-aware lint.
 - CI and release workflows use the Node 24 builds of the GitHub actions (`checkout` and `setup-node` on v5 like `agent.yml`, `upload-artifact` on v6), so runs no longer warn about the deprecated Node 20 runtime.
 
 ## v0.1.0 · 2026-09-16 · element-library, fullstack auth, flatdb on R2

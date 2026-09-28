@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { createSmtpProvider, parseAddress, type SmtpConfig, type SmtpEnvelope } from './smtp.js';
 import { EmailDeliveryError } from '../types.js';
 

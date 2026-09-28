@@ -9,17 +9,18 @@ Single instruction file for every coding agent working in this repository. Codex
 - Tailwind CSS v4
 - `@loewen-digital/fullstack` (auth, security rate limiter, mail) with its SvelteKit adapter
 - `@loewen-digital/flatdb`: JSON documents with zod schemas; `.data/` locally, R2 on Cloudflare
-- Vitest (unit) + Playwright (E2E)
+- Toolchain Vite+ (`vite-plus`), configured in `vite.config.ts`: Vite 8, Vitest 5 (unit tests import from `vite-plus/test`, not `vitest`), Oxlint, Oxfmt. Never add ESLint, Prettier or a second test runner; Oxlint sees only the `<script>` of `.svelte` files, svelte-check covers the templates
+- Playwright (E2E)
 - Cloudflare Workers adapter (`@sveltejs/adapter-cloudflare` 7)
-- Node 22, npm
+- Node 24 (`engines.node` in `package.json`), npm
 
 ## Commands
 
-- `npm run dev` — dev server
-- `npm run build` — production build (Cloudflare)
-- `npm run check` — svelte-check + TypeScript
-- `npm run lint` — ESLint + Prettier
-- `npm test` — Vitest unit tests
+- `npm run dev` — dev server (`vp dev`)
+- `npm run build` — production build for Cloudflare (`vp build`)
+- `npm run check` — `vp check` (format, lint, type check of `.ts`) plus svelte-check (`.svelte`)
+- `npm run format` — `vp check --fix`: formats and applies lint autofixes
+- `npm test` — unit tests (`vp test run`)
 - `npm run test:e2e` — Playwright E2E tests
 
 ## Architecture
