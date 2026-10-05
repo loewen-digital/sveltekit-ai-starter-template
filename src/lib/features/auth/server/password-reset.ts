@@ -1,6 +1,6 @@
-import { sendEmail } from '$lib/server/email/index.js';
-import { passwordResetEmail } from '$lib/server/email/templates.js';
-import { logger } from '$lib/server/logger.js';
+import { sendEmail } from '#lib/server/email/index.js';
+import { passwordResetEmail } from '#lib/server/email/templates.js';
+import { logger } from '#lib/server/logger.js';
 import type { AuthContext } from './auth.js';
 
 export const PASSWORD_RESET = 'password_reset';

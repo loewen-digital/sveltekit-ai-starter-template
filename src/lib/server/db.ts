@@ -1,4 +1,5 @@
-import { dev } from '$app/environment';
+import { env } from 'cloudflare:workers';
+import { dev } from '$app/env';
 import { flatdb, R2Adapter, type Collection, type StorageAdapter } from '@loewen-digital/flatdb';
 import { AtomicFsAdapter } from './atomic-fs-adapter.js';
 import { collections, type SessionDoc, type TokenDoc, type UserDoc } from './collections/index.js';
@@ -34,10 +35,11 @@ export function createDb(adapter: StorageAdapter): AppDb {
  * instance would serve stale reads as soon as another isolate had written.
  * The auth handle builds one per request; nothing keeps one at module level.
  */
-export function createRequestDb(platform: App.Platform | undefined): AppDb {
+export function createRequestDb(): AppDb {
 	if (dev) return createDb(new AtomicFsAdapter(DATA_DIR));
 
-	const bucket = platform?.env?.CONTENT;
+	// Bindings come from the Workers runtime (`cloudflare:workers`), not from `event.platform`.
+	const bucket = env.CONTENT;
 	if (!bucket) throw new Error('The R2 bucket binding CONTENT is required outside vite dev');
 	return createDb(new R2Adapter({ bucket, prefix: 'data' }));
 }

@@ -4,7 +4,7 @@
 declare module '@webtides/element-js-ssr-renderer/dom-shim';
 
 declare module '@webtides/element-js-ssr-renderer/sveltekit' {
-	import type { Handle } from '@sveltejs/kit';
+	import type { Handle } from '@sveltejs/kit/hooks';
 
 	type PageTransform = (html: string, context: Record<string, unknown>) => string | Promise<string>;
 

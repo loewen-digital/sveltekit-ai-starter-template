@@ -1,12 +1,11 @@
-import type { Handle } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
+import { sequence, type Handle } from '@sveltejs/kit/hooks';
 import { clearAuthCookie, createHandle } from '@loewen-digital/fullstack/adapters/sveltekit';
-import { createRequestDb } from '$lib/server/db.js';
+import { createRequestDb } from '#lib/server/db.js';
 import { AUTH_COOKIE, createAppAuth, toSessionUser } from './auth.js';
 
 /** The database and the auth stack for this request, on `event.locals`. */
 const stackHandle: Handle = ({ event, resolve }) => {
-	const db = createRequestDb(event.platform);
+	const db = createRequestDb();
 	const { auth, authDb } = createAppAuth(db);
 	event.locals.db = db;
 	event.locals.auth = auth;

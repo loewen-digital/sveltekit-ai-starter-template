@@ -19,8 +19,6 @@ export interface EmailEnv {
 	SMTP_USERNAME?: string;
 	SMTP_PASSWORD?: string;
 	SMTP_SECURE?: string;
-	// Present so the whole $env/dynamic/private record is assignable here.
-	[key: string]: string | undefined;
 }
 
 function requireFrom(env: EmailEnv): string {

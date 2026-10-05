@@ -1,7 +1,6 @@
-import type { Handle, ServerInit } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
-import { authHandle } from '$lib/features/auth/server/middleware.js';
-import { elementCatalog, elementProperties } from '$lib/design/catalog.js';
+import { sequence, type Handle, type ServerInit } from '@sveltejs/kit/hooks';
+import { authHandle } from '#lib/features/auth/server/middleware.js';
+import { elementCatalog, elementProperties } from '#lib/design/catalog.js';
 
 let elementHandle: Handle;
 

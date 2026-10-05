@@ -1,14 +1,13 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
+	"extends": "$app/tsconfig",
 	"compilerOptions": {
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"moduleResolution": "bundler"
-	}
+		// The app is TypeScript only. With JavaScript allowed, the generated
+		// worker-configuration.d.ts pulls the build output in through its
+		// `mainModule` type and `npm run check` fails on it after a build.
+		"allowJs": false,
+		"checkJs": false
+	},
+	"include": ["src", "tests", "vite.config.ts", "playwright.config.ts", "worker-configuration.d.ts"]
 }

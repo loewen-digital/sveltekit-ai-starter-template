@@ -33,8 +33,8 @@ Form fields (`el-input-field`, `el-password-field`, …) render their native `<i
 ```svelte
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { SubmitButton } from '$lib/design/components';
-	import { validateEmail } from '$lib/shared/validation.js';
+	import { SubmitButton } from '#lib/design/components/index.js';
+	import { validateEmail } from '#lib/shared/validation.js';
 
 	let { form } = $props();
 	let clientError = $state('');

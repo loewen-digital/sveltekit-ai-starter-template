@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { validatePassword, validatePasswordConfirm } from '$lib/shared/validation.js';
-import { resetPassword } from '$lib/features/auth/server/password-reset.js';
+import { validatePassword, validatePasswordConfirm } from '#lib/shared/validation.js';
+import { resetPassword } from '#lib/features/auth/server/password-reset.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {

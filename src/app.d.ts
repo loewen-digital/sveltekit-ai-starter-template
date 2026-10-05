@@ -1,6 +1,6 @@
 import type { AuthDbAdapter, AuthInstance, AuthSession } from '@loewen-digital/fullstack/auth';
-import type { SessionUser } from '$lib/features/auth/server/auth.js';
-import type { AppDb } from '$lib/server/db.js';
+import type { SessionUser } from '#lib/features/auth/server/auth.js';
+import type { AppDb } from '#lib/server/db.js';
 
 declare global {
 	namespace App {
@@ -17,11 +17,7 @@ declare global {
 		}
 		// interface PageData {}
 		// interface PageState {}
-		interface Platform {
-			env: {
-				CONTENT: R2Bucket;
-			};
-		}
+		// interface Platform {}
 	}
 }
 

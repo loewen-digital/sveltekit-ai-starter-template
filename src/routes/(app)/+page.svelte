@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card } from '$lib/design/components';
+	import { Card } from '#lib/design/components/index.js';
 
 	let { data } = $props();
 </script>

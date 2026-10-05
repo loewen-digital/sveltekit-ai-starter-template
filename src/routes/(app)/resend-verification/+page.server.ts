@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
+import { createVerificationToken } from '#lib/features/auth/server/email-verification.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

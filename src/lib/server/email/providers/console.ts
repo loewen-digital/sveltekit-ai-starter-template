@@ -1,4 +1,4 @@
-import { logger } from '$lib/server/logger.js';
+import { logger } from '#lib/server/logger.js';
 import type { EmailProvider, MailMessage } from '../types.js';
 
 /** Pulls the first href out of a template so local dev can follow it. */

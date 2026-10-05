@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Card, SubmitButton } from '$lib/design/components';
+	import { Card, SubmitButton } from '#lib/design/components/index.js';
 
 	let { form } = $props();
 

@@ -1,5 +1,5 @@
 import { fail, type ActionFailure, type RequestEvent } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { DISABLE_RATE_LIMIT } from '$app/env/private';
 import { createRateLimiter } from '@loewen-digital/fullstack/security';
 
 export type RateLimitFailure = ActionFailure<{ error: string }>;
@@ -25,7 +25,7 @@ const authRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 })
  * the budget partway through the run.
  */
 export function checkAuthRateLimit(event: RequestEvent): RateLimitFailure | null {
-	if (env.DISABLE_RATE_LIMIT === 'true') return null;
+	if (DISABLE_RATE_LIMIT === 'true') return null;
 
 	const { allowed, resetAt } = authRateLimiter.check(event.getClientAddress());
 	if (allowed) return null;

@@ -7,7 +7,7 @@ import {
 } from '@loewen-digital/fullstack/auth';
 import { createFlatdbAuthAdapter } from '@loewen-digital/fullstack/auth/flatdb';
 import { setAuthCookie } from '@loewen-digital/fullstack/adapters/sveltekit';
-import type { AppDb } from '$lib/server/db.js';
+import type { AppDb } from '#lib/server/db.js';
 
 /** Auth sessions and their cookie live this long, in seconds. */
 export const SESSION_TTL = 7 * 24 * 3600;

@@ -1,7 +1,7 @@
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { dev } from '$app/env';
+import * as env from '$app/env/private';
 import { createMailInstance, type MailInstance } from '@loewen-digital/fullstack/mail';
-import { logger } from '$lib/server/logger.js';
+import { logger } from '#lib/server/logger.js';
 import { resolveEmailProvider } from './provider.js';
 import type { EmailMessage } from './types.js';
 

@@ -1,6 +1,8 @@
 node_modules
 .svelte-kit
 .wrangler
+# Types of the Workers runtime and of the bindings in wrangler.jsonc, written by `npm run check`
+worker-configuration.d.ts
 .env
 .env.*
 !.env.example

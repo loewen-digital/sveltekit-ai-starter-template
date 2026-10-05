@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Card, SubmitButton } from '$lib/design/components';
-	import { validateEmail } from '$lib/shared/validation.js';
+	import { Card, SubmitButton } from '#lib/design/components/index.js';
+	import { validateEmail } from '#lib/shared/validation.js';
 
 	let { currentEmail, form }: { currentEmail: string; form: Record<string, unknown> | null } =
 		$props();

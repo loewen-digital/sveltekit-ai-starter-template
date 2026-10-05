@@ -1,6 +1,6 @@
 <script lang="ts">
-	import EmailForm from '$lib/features/profile/components/EmailForm.svelte';
-	import PasswordForm from '$lib/features/profile/components/PasswordForm.svelte';
+	import EmailForm from '#lib/features/profile/components/EmailForm.svelte';
+	import PasswordForm from '#lib/features/profile/components/PasswordForm.svelte';
 
 	let { data, form } = $props();
 </script>

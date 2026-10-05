@@ -4,21 +4,22 @@ Single instruction file for every coding agent working in this repository. Codex
 
 ## Stack
 
-- SvelteKit v2, Svelte 5 (runes: $state, $derived, $effect, $props, $bindable)
+- SvelteKit v3, Svelte 5 (runes: $state, $derived, $effect, $props, $bindable)
 - TypeScript strict mode
 - Tailwind CSS v4
 - `@loewen-digital/fullstack` (auth, security rate limiter, mail) with its SvelteKit adapter
 - `@loewen-digital/flatdb`: JSON documents with zod schemas; `.data/` locally, R2 on Cloudflare
 - Toolchain Vite+ (`vite-plus`), configured in `vite.config.ts`: Vite 8, Vitest 5 (unit tests import from `vite-plus/test`, not `vitest`), Oxlint, Oxfmt. Never add ESLint, Prettier or a second test runner; Oxlint sees only the `<script>` of `.svelte` files, svelte-check covers the templates
 - Playwright (E2E)
-- Cloudflare Workers adapter (`@sveltejs/adapter-cloudflare` 7)
+- Cloudflare Workers adapter (`@sveltejs/adapter-cloudflare` 8)
 - Node 24 (`engines.node` in `package.json`), npm
 
 ## Commands
 
 - `npm run dev` — dev server (`vp dev`)
 - `npm run build` — production build for Cloudflare (`vp build`)
-- `npm run check` — `vp check` (format, lint, type check of `.ts`) plus svelte-check (`.svelte`)
+- `npm run preview` — the production build in the Workers runtime (`wrangler dev`); run `npm run build` first
+- `npm run check` — `svelte-kit sync` and `wrangler types` write the generated types, then `vp check` (format, lint, type check of `.ts`) plus svelte-check (`.svelte`)
 - `npm run format` — `vp check --fix`: formats and applies lint autofixes
 - `npm test` — unit tests (`vp test run`)
 - `npm run test:e2e` — Playwright E2E tests
@@ -51,6 +52,21 @@ Single instruction file for every coding agent working in this repository. Codex
 - Forms: fields post natively, no `bind:value`; client validation reads `formData` in `use:enhance`
 - ALWAYS token colours under the `--el-*` names: bg-accent, text-fg, text-danger (NOT bg-blue-600, NOT project-specific names); new tokens go into `src/lib/design/theme.css`
 - Read src/lib/design/DESIGN-SYSTEM.md for details
+
+## SvelteKit 3 — Hard Rules
+
+What you know about SvelteKit is mostly SvelteKit 2. These differ, and the old form fails at build time or does nothing:
+
+- Configuration lives in `sveltekit({ ... })` in `vite.config.ts`. There is no `svelte.config.js`; never create one
+- Alias: `#lib/….js` with the file extension (`package.json` `imports`), NOT `$lib/…`. A folder's `index.ts` is named: `#lib/design/components/index.js`
+- `page`, `navigating`, `updated` from `$app/state` without the `$` prefix, NOT `$app/stores`
+- `dev`, `browser`, `building`, `version` from `$app/env`, NOT `$app/environment`
+- Environment variables: declare each one in `src/env.ts`, import it from `$app/env/private` (or `$app/env/public`), NOT `$env/...` and not `process.env`. One that may be missing gets the `optional` schema there; a variable without a schema must be set or the app does not start
+- Cloudflare bindings: `import { env } from 'cloudflare:workers'`, NOT `event.platform.env`. A new binding goes into `wrangler.jsonc`; `npm run check` regenerates its type in `worker-configuration.d.ts` (ignored by git)
+- Hook types (`Handle`, `HandleServerError`, `ServerInit`, …) from `@sveltejs/kit/hooks`, NOT `@sveltejs/kit`
+- `Response.json(...)` and `new Response(...)`, NOT `json()` and `text()`. `refreshAll()`, NOT `invalidateAll()`. `goto(url, { shallow: true, state })`, NOT `pushState`/`replaceState`. `resolve()` and `asset()` from `$app/paths`, NOT `base` and `assets`
+- `redirect()` to another origin needs `{ external: true }`
+- For the current API read svelte.dev/docs/kit/llms.txt, and svelte.dev/docs/kit/migrating-to-sveltekit-3 for what changed
 
 ## Testing — Hard Rules
 

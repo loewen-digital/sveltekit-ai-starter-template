@@ -17,6 +17,7 @@ No database to set up: documents are written as JSON files under `.data/`.
 | ------------------ | ------------------------------------------------------------------- |
 | `npm run dev`      | Start dev server (`vp dev`)                                         |
 | `npm run build`    | Production build for Cloudflare Workers (`vp build`)                |
+| `npm run preview`  | Serve that build in the Workers runtime (`wrangler dev`)            |
 | `npm run check`    | `vp check` (format, lint, TypeScript) plus svelte-check (`.svelte`) |
 | `npm run format`   | `vp check --fix`: format and apply lint autofixes                   |
 | `npm test`         | Unit tests (`vp test run`)                                          |
@@ -24,7 +25,7 @@ No database to set up: documents are written as JSON files under `.data/`.
 
 ## Tech Stack
 
-- **Framework:** SvelteKit v2, Svelte 5 (Runes)
+- **Framework:** SvelteKit v3, Svelte 5 (Runes)
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS v4
 - **Design system:** @webtides/element-library Web Components, server-rendered via @webtides/element-js-ssr-renderer
@@ -107,6 +108,11 @@ Password reset and email verification need a delivery provider.
 Setting both `RESEND_API_KEY` and `SMTP_HOST` is rejected — set
 `EMAIL_PROVIDER` so the choice is explicit rather than a matter of precedence.
 
+Every environment variable the app reads is declared in `src/env.ts` and
+imported from `$app/env/private`; a new one is added there first. Locally they
+come from `.env` (see `.env.example`), on Cloudflare from the Worker's
+variables and secrets.
+
 ### Resend (HTTP API)
 
 ```bash
@@ -166,12 +172,12 @@ is unit tested without opening a socket.
 The design system is [`@webtides/element-library`](https://github.com/webtides/element-library),
 server-rendered and used directly as `<el-…>` tags; see
 [`src/lib/design/DESIGN-SYSTEM.md`](src/lib/design/DESIGN-SYSTEM.md) for the
-elements, tokens and rules. `$lib/design/components` holds only what the
+elements, tokens and rules. `#lib/design/components` holds only what the
 library lacks: `Card`, `EmptyState`, `Spinner` and `SubmitButton`.
 
 ```svelte
 <script lang="ts">
-	import { Card, SubmitButton } from '$lib/design/components';
+	import { Card, SubmitButton } from '#lib/design/components/index.js';
 </script>
 
 <Card>
@@ -193,14 +199,16 @@ npm run build
 npx wrangler deploy
 ```
 
-To serve the production build locally (needed to exercise anything that
-depends on the Workers runtime, like SMTP — see below):
+To serve the production build locally, in the Workers runtime with a local R2
+bucket under `.wrangler/`:
 
 ```bash
 npm run build
-npx wrangler dev
+npm run preview
 ```
 
-`npm run preview` runs a plain Vite preview server instead: fine for
-checking pages and forms, but it runs on Node, not the Workers runtime, so
-it can't exercise Workers-only APIs (`cloudflare:sockets`, R2, etc.).
+`npm run preview` is `wrangler dev`. Outside `npm run dev` the app needs a mail
+provider; `npx wrangler dev --var EMAIL_PROVIDER:console` logs the mails
+instead. Vite's own preview server is not used: it runs on Node and cannot
+load a build that imports `cloudflare:workers`
+([sveltejs/kit#17271](https://github.com/sveltejs/kit/issues/17271)).

@@ -1,9 +1,14 @@
+import adapter from '@sveltejs/adapter-cloudflare';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
-	plugins: lazyPlugins(() => [tailwindcss(), sveltekit()]),
+	plugins: lazyPlugins(() => [
+		tailwindcss(),
+		sveltekit({ preprocess: vitePreprocess(), adapter: adapter() })
+	]),
 	ssr: {
 		// Bundle the element-js packages into the server build so the DOM shim's side effect
 		// stays ordered ahead of the component classes' `extends HTMLElement` evaluation
@@ -19,7 +24,7 @@ export default defineConfig({
 	},
 	// Oxlint sees the <script> of .svelte files only; templates are covered by svelte-check.
 	lint: {
-		ignorePatterns: ['build/', '.svelte-kit/', 'dist/', 'drizzle/'],
+		ignorePatterns: ['build/', '.svelte-kit/', 'dist/', 'drizzle/', 'worker-configuration.d.ts'],
 		env: { browser: true, node: true },
 		categories: { correctness: 'error' },
 		// ESLint and typescript-eslint "recommended" rules that sit outside Oxlint's correctness category.
@@ -64,6 +69,7 @@ export default defineConfig({
 			'playwright-report',
 			'test-results',
 			'package-lock.json',
+			'worker-configuration.d.ts',
 			'.github/workflows/agent.yml'
 		]
 	}

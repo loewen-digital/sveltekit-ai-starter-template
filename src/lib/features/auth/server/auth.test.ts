@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import { MemoryAdapter } from '@loewen-digital/flatdb';
-import { createDb } from '$lib/server/db.js';
-import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';
+import { createDb } from '#lib/server/db.js';
+import { updateEmail, updatePassword } from '#lib/features/profile/server/profile.js';
 import { createAppAuth, type AuthContext } from './auth.js';
 import { createVerificationToken, EMAIL_VERIFICATION, verifyEmail } from './email-verification.js';
 import { PASSWORD_RESET, resetPassword } from './password-reset.js';

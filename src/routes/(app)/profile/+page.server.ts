@@ -4,10 +4,10 @@ import {
 	validatePassword,
 	validatePasswordConfirm,
 	normalizeEmail
-} from '$lib/shared/validation.js';
-import { startSession } from '$lib/features/auth/server/auth.js';
-import { createVerificationToken } from '$lib/features/auth/server/email-verification.js';
-import { updateEmail, updatePassword } from '$lib/features/profile/server/profile.js';
+} from '#lib/shared/validation.js';
+import { startSession } from '#lib/features/auth/server/auth.js';
+import { createVerificationToken } from '#lib/features/auth/server/email-verification.js';
+import { updateEmail, updatePassword } from '#lib/features/profile/server/profile.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

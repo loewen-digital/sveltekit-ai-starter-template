@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { clearAuthCookie } from '@loewen-digital/fullstack/adapters/sveltekit';
-import { AUTH_COOKIE } from '$lib/features/auth/server/auth.js';
+import { AUTH_COOKIE } from '#lib/features/auth/server/auth.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

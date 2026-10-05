@@ -1,5 +1,5 @@
-import type { AuthContext } from '$lib/features/auth/server/auth.js';
-import { normalizeEmail } from '$lib/shared/validation.js';
+import type { AuthContext } from '#lib/features/auth/server/auth.js';
+import { normalizeEmail } from '#lib/shared/validation.js';
 
 export async function updateEmail(
 	{ db, auth, authDb }: AuthContext,

@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { startSession } from '$lib/features/auth/server/auth.js';
-import { checkAuthRateLimit } from '$lib/features/auth/server/rate-limit-guard.js';
-import { normalizeEmail } from '$lib/shared/validation.js';
+import { startSession } from '#lib/features/auth/server/auth.js';
+import { checkAuthRateLimit } from '#lib/features/auth/server/rate-limit-guard.js';
+import { normalizeEmail } from '#lib/shared/validation.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

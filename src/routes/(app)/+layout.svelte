@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LogoutButton from '$lib/features/auth/components/LogoutButton.svelte';
+	import LogoutButton from '#lib/features/auth/components/LogoutButton.svelte';
 
 	let { data, children } = $props();
 
