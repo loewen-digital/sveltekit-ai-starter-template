@@ -46,24 +46,21 @@ jobs:
       - run: npm run build
         if: env.CLOUDFLARE_API_TOKEN != ''
 
-      # Wrangler writes one JSON line per action into WRANGLER_OUTPUT_FILE_PATH; the `preview`
-      # line carries `preview_urls`. The log is the fallback for the URL.
+      # `--json` prints one JSON object; `.preview.urls[0]` is the Preview URL, as in Cloudflare's own
+      # GitHub Actions example (developers.cloudflare.com/workers/previews/automation-examples/).
       - name: Deploy the Preview
         if: env.CLOUDFLARE_API_TOKEN != ''
-        env:
-          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler.ndjson
         run: |
-          npx wrangler preview --cwd "$APP_DIR" --name "$PREVIEW_NAME" --message "${{ github.event.pull_request.head.sha }}" \
-            | tee "$RUNNER_TEMP/wrangler.log"
+          npx wrangler preview --cwd "$APP_DIR" --name "$PREVIEW_NAME" --message "${{ github.event.pull_request.head.sha }}" --json \
+            | tee "$RUNNER_TEMP/wrangler-preview.json"
 
       - name: Comment the URL on the PR
         if: env.CLOUDFLARE_API_TOKEN != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          url=$(jq -r 'select(.type == "preview") | .preview_urls[0] | if type == "object" then (.url // .hostname) else . end' \
-            "$RUNNER_TEMP/wrangler.ndjson" 2>/dev/null | head -1)
-          [ -n "$url" ] || url=$(grep -oE 'https://[^ ]+\.workers\.dev[^ ]*' "$RUNNER_TEMP/wrangler.log" | head -1)
+          url=$(jq -er '.preview.urls[0]' "$RUNNER_TEMP/wrangler-preview.json" 2>/dev/null || true)
+          [ -n "$url" ] || url=$(grep -oE 'https://[^" ]+\.workers\.dev[^" ]*' "$RUNNER_TEMP/wrangler-preview.json" | head -1)
           gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none \
             --body "Preview: ${url:-see the workflow log} (\`$PREVIEW_NAME\`, ${{ github.event.pull_request.head.sha }})"
 
