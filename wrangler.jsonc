@@ -12,5 +12,16 @@
 			"binding": "CONTENT",
 			"bucket_name": "sveltekit-starter-content"
 		}
-	]
+	],
+	// Worker Previews, one per pull request (.github/workflows/preview.yml). A Preview gets only
+	// the bindings listed here, never production's: a binding without a counterpart is absent in
+	// the Preview. Create the bucket once: `npx wrangler r2 bucket create sveltekit-starter-content-preview`.
+	"previews": {
+		"r2_buckets": [
+			{
+				"binding": "CONTENT",
+				"bucket_name": "sveltekit-starter-content-preview"
+			}
+		]
+	}
 }

@@ -62,7 +62,7 @@ What you know about SvelteKit is mostly SvelteKit 2. These differ, and the old f
 - `page`, `navigating`, `updated` from `$app/state` without the `$` prefix, NOT `$app/stores`
 - `dev`, `browser`, `building`, `version` from `$app/env`, NOT `$app/environment`
 - Environment variables: declare each one in `src/env.ts`, import it from `$app/env/private` (or `$app/env/public`), NOT `$env/...` and not `process.env`. One that may be missing gets the `optional` schema there; a variable without a schema must be set or the app does not start
-- Cloudflare bindings: `import { env } from 'cloudflare:workers'`, NOT `event.platform.env`. A new binding goes into `wrangler.jsonc`; `npm run check` regenerates its type in `worker-configuration.d.ts` (ignored by git)
+- Cloudflare bindings: `import { env } from 'cloudflare:workers'`, NOT `event.platform.env`. A new binding goes into `wrangler.jsonc` twice: top level for production and in the `previews` block with a resource of its own (`<name>-preview`); a Preview never binds production KV, R2 or D1. `npm run check` regenerates its type in `worker-configuration.d.ts` (ignored by git)
 - Hook types (`Handle`, `HandleServerError`, `ServerInit`, …) from `@sveltejs/kit/hooks`, NOT `@sveltejs/kit`
 - `Response.json(...)` and `new Response(...)`, NOT `json()` and `text()`. `refreshAll()`, NOT `invalidateAll()`. `goto(url, { shallow: true, state })`, NOT `pushState`/`replaceState`. `resolve()` and `asset()` from `$app/paths`, NOT `base` and `assets`
 - `redirect()` to another origin needs `{ external: true }`
@@ -117,6 +117,7 @@ Two ways to be here; check `GITHUB_ACTIONS`.
 - Never ask. Blocked means: comment the question with options, `needs-human`, stop.
 - Conventional commits (`feat:`, `fix:`, `chore:`, ...). Never force-push. Never commit secrets.
 - Files you write or edit are formatted on save by the hooks in `.claude/settings.json` (Claude Code) and `.codex/hooks.json` (Codex): `vp fmt` on that file, silent without `node_modules`. Do not hand-format; `npm run format` catches what the hook missed.
+- Cloudflare: production deploys through `wrangler deploy`, every pull request gets a Worker Preview through `wrangler preview` (`.github/workflows/preview.yml`), never `wrangler pages`. A binding you add to the Wrangler config gets its counterpart in the `previews` block, bound to a resource of its own (`<name>-preview`); a Preview never binds production KV, R2 or D1.
 - In the loop, Eddy merges, not the agent.
 - In the loop, never create or modify files under `.github/workflows/`: the App token lacks the `workflows` scope and the push is rejected. Describe the needed workflow change in a `needs-human` issue instead and continue. Locally, Eddy's `gh` has the scope.
 

@@ -31,7 +31,7 @@
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
 		"vite": "npm:@voidzero-dev/vite-plus-core@1.0.0",
-		"wrangler": "^4.118.0",
+		"wrangler": "^4.135.0",
 		"vite-plus": "1.0.0"
 	},
 	"dependencies": {

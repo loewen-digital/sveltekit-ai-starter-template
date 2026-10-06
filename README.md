@@ -190,14 +190,35 @@ library lacks: `Card`, `EmptyState`, `Spinner` and `SubmitButton`.
 
 ## Deployment
 
-Configured for Cloudflare Workers. Create the R2 bucket once (the name is set
-in `wrangler.jsonc`), then build and deploy:
+Configured for Cloudflare Workers, never Pages. Create the two R2 buckets once
+(the names are set in `wrangler.jsonc`: one for production, one for the
+Previews), then build and deploy:
 
 ```bash
 npx wrangler r2 bucket create sveltekit-starter-content
+npx wrangler r2 bucket create sveltekit-starter-content-preview
 npm run build
 npx wrangler deploy
 ```
+
+In GitHub, pushing a tag `v<version>` runs `.github/workflows/deploy.yml`
+(check, tests, build, `wrangler deploy`), and every pull request gets a Worker
+Preview from `.github/workflows/preview.yml`: an isolated copy of the app named
+`pr-<number>` under the same Worker, with the bindings of the `previews` block
+only, its URL as a comment on the PR, deleted when the PR closes. Both need the
+repo secrets `CLOUDFLARE_API_TOKEN` (token template "Edit Cloudflare Workers")
+and `CLOUDFLARE_ACCOUNT_ID`; without them the Cloudflare steps are skipped.
+
+Secrets the app reads at runtime (the mail provider's, see Email) are set on the
+Worker for production and once for all Previews:
+
+```bash
+npx wrangler secret put RESEND_API_KEY
+npx wrangler preview base-config secret put RESEND_API_KEY
+```
+
+See [decision 0009](docs/decisions/0009-workers-previews.md) for why Previews
+and not Version URLs or a second Worker.
 
 To serve the production build locally, in the Workers runtime with a local R2
 bucket under `.wrangler/`:
