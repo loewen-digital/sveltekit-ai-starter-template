@@ -201,8 +201,9 @@ npm run build
 npx wrangler deploy
 ```
 
-In GitHub, pushing a tag `v<version>` runs `.github/workflows/deploy.yml`
-(check, tests, build, `wrangler deploy`), and every pull request gets a Worker
+In GitHub, pushing a tag `v<version>` runs `.github/workflows/ci.yml`, which
+deploys with `wrangler deploy` once check, unit tests, build and E2E have
+passed, and every pull request gets a Worker
 Preview from `.github/workflows/preview.yml`: an isolated copy of the app named
 `pr-<number>` under the same Worker, with the bindings of the `previews` block
 only, its URL as a comment on the PR, deleted when the PR closes. Both need the
@@ -219,6 +220,12 @@ npx wrangler preview base-config secret put RESEND_API_KEY
 
 See [decision 0009](docs/decisions/0009-workers-previews.md) for why Previews
 and not Version URLs or a second Worker.
+
+`ci.yml` is cut to fit the org's 2.000 free Actions minutes a month: a pull
+request runs check, unit tests, build and E2E, a push to `main` runs everything
+but E2E, a commit that touches only `docs/**` or Markdown runs nothing, and a
+tag adds the deploy on top. See
+[decision 0010](docs/decisions/0010-ci-minutes.md).
 
 To serve the production build locally, in the Workers runtime with a local R2
 bucket under `.wrangler/`:
