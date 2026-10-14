@@ -1,18 +1,42 @@
 name: CI
 
+# One workflow, three jobs, the minutes in mind: the org has 2.000 Actions minutes a month for all
+# its private repos together, and Playwright on every push to main ate them in two weeks
+# (anspiel, October 2026: 1.318 minutes in 13 days, 24 billed minutes per push).
+#   pull request        → verify + e2e (and a Worker Preview pr-<n> from preview.yml)
+#   push to main        → verify only; a push that touches nothing but docs runs nothing
+#   tag v<version>      → verify + e2e, then the production deploy, gated on both
+#   manual run          → the same as a tag, from any branch (Actions tab → Run workflow)
+# Target: at most 7 billed minutes per push to main. Billing rounds every job up to full minutes,
+# so three parallel jobs of 10 seconds cost three minutes; keep the job count low.
+# Libraries: delete the jobs `e2e` and `deploy` and the `tags` trigger; release.yml publishes them.
+# Needs the repo secrets CLOUDFLARE_API_TOKEN (token template "Edit Cloudflare Workers") and
+# CLOUDFLARE_ACCOUNT_ID for the deploy; without them the deploy step is skipped, the run stays green.
+
 on:
   push:
     branches: [main]
+    tags: ["v*"]
+    # Not evaluated for tags (GitHub ignores path filters on tag pushes), so a release always runs.
+    paths-ignore: ["docs/**", "**.md"]
   pull_request:
+  workflow_dispatch:
 
+# A newer push to the same branch or pull request cancels the running one. Never for tags: a
+# release run must finish, and two tags in a row are two releases.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
 jobs:
   verify:
     name: Check, unit, build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 
@@ -32,9 +56,19 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          v="v$(node -p 'require("./package.json").version')"
+          [ "$v" = "$GITHUB_REF_NAME" ] || { echo "tag is $GITHUB_REF_NAME, package.json says $v"; exit 1; }
+
   e2e:
     name: E2E
+    # Every event except a push to a branch: pull requests and tags are the gates, a push to main
+    # is not (it would pay the Playwright minutes on every commit).
+    if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 
@@ -45,18 +79,42 @@ jobs:
 
       - run: npm ci
 
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium
 
-      # The dev server is started by playwright.config.ts, which also sets
-      # DISABLE_RATE_LIMIT so the suite is not throttled for driving every
-      # test from a single IP.
+      # playwright.config.ts starts the app (webServer) and sets what the suite needs.
       - name: E2E tests
         run: npm run test:e2e
 
+      # Only on failure, and short-lived: artifact storage counts against the same quota.
       - uses: actions/upload-artifact@v6
-        if: ${{ !cancelled() }}
+        if: failure()
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  deploy:
+    name: Deploy
+    needs: [verify, e2e]
+    if: >-
+      ${{ !cancelled()
+        && needs.verify.result == 'success'
+        && needs.e2e.result == 'success'
+        && (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Deploy
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
